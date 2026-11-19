@@ -1,0 +1,973 @@
+<?php
+session_start();
+
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
+if (!isset($_SESSION['email'])) {
+    $_SESSION['msg'] = "You must log in first";
+    header('location:login.php');
+    exit();
+}
+
+require_once 'db_connect.php';
+include 'header.php';
+
+// Initialize variable to hold total due amount
+$total_due_amount = 0;
+?>
+
+
+
+
+<!-- =========================================================
+     MAIN CONTENT
+========================================================= -->
+
+<section id="main-content">
+
+    <section class="wrapper">
+
+        <div class="view-clients-page">
+
+
+            <!-- =================================================
+                 PAGE HEADER
+            ================================================== -->
+
+            <div class="view-clients-header">
+
+                <div class="view-clients-title-wrap">
+
+                    <h1 class="view-clients-title">
+
+                        <span class="view-clients-title-icon">
+                            💰
+                        </span>
+
+                        Defaulters Payments
+
+                    </h1>
+
+                    <p class="view-clients-subtitle">
+                        View and manage defaulted payment records
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <!-- =================================================
+                 CARD
+            ================================================== -->
+
+            <div class="view-clients-card">
+
+
+                <!-- =================================================
+                     SEARCH
+                ================================================== -->
+
+                <div class="view-clients-filter">
+
+                    <div class="view-client-search-wrap">
+
+                        <span class="view-client-search-icon">
+                            🔍
+                        </span>
+
+                        <input
+                            type="text"
+                            id="txt_searchall"
+                            class="view-client-search"
+                            placeholder="Search by Name or Branch"
+                            autocomplete="off"
+                        >
+
+                    </div>
+
+                </div>
+
+
+                <!-- =================================================
+                     TABLE
+                ================================================== -->
+
+                <div
+                    class="view-clients-table-wrapper"
+                    id="scrollable-content"
+                >
+
+                    <table
+                        class="view-clients-table"
+                        id="payments-table"
+                    >
+
+                        <thead>
+
+                            <tr>
+
+                                <th>
+                                    Branch
+                                </th>
+
+                                <th>
+                                    Service
+                                </th>
+
+                                <th>
+                                    Name
+                                </th>
+
+                                <th>
+                                    Total Amount
+                                </th>
+
+                                <th>
+                                    Paid Amount
+                                </th>
+
+                                <th>
+                                    Due Amount
+                                </th>
+
+                                <th>
+                                    Due Date
+                                </th>
+
+                                <th>
+                                    Reasons
+                                </th>
+
+                                <th>
+                                    Action
+                                </th>
+
+                            </tr>
+
+                        </thead>
+
+
+                        <tbody>
+
+<?php
+
+// Fetch due payments from the database
+$sql = "SELECT c.Id AS client_Id, c.branch, c.services, c.cust_name,
+p.total_amount, SUM(p.paid_amount) AS total_paid,
+(p.total_amount - SUM(p.paid_amount)) AS due_amount,
+MAX(p.due_date) AS due_date,
+p.defaulter_note
+FROM tbl_client c
+LEFT JOIN tbl_payment p ON c.Id = p.client_Id
+WHERE p.status = 'defaulted'
+GROUP BY c.Id
+HAVING due_amount > 0
+
+
+UNION
+
+
+SELECT p.client_Id,
+'Nagpur' AS branch,
+'Consultancy' AS services,
+IF(
+    p.payment_type = 'Company Pay',
+    pl.company_name,
+    pl.candidate_name
+) AS cust_name,
+
+p.total_amount,
+SUM(p.paid_amount) AS total_paid,
+(p.total_amount - SUM(p.paid_amount)) AS due_amount,
+MAX(p.due_date) AS due_date,
+p.defaulter_note
+
+FROM tbl_payment p
+
+LEFT JOIN tbl_placement pl
+ON p.interview_id = pl.interview_id
+
+WHERE p.status = 'defaulted'
+
+GROUP BY p.client_Id,p.total_amount
+
+HAVING due_amount > 0
+
+
+UNION
+
+
+SELECT
+p.client_Id,
+'Nagpur' AS branch,
+sa.course_inquired AS services,
+sa.name AS student_name,
+p.total_amount,
+SUM(p.paid_amount) AS total_paid,
+(p.total_amount - SUM(p.paid_amount)) AS due_amount,
+MAX(p.due_date) AS due_date,
+p.defaulter_note
+
+FROM tbl_student_admissions sa
+
+LEFT JOIN tbl_payment p
+ON sa.student_id = p.client_Id
+
+WHERE p.status = 'defaulted'
+
+GROUP BY sa.student_id
+
+HAVING due_amount > 0
+
+
+ORDER BY due_date ASC";
+
+
+$result = mysqli_query($conn, $sql);
+
+
+if (!$result) {
+
+    echo '
+
+    <tr>
+
+        <td
+            colspan="9"
+            class="view-client-no-data"
+        >
+
+            Error:
+            ' .
+            htmlspecialchars(
+                mysqli_error($conn),
+                ENT_QUOTES,
+                'UTF-8'
+            )
+            . '
+
+        </td>
+
+    </tr>
+
+    ';
+
+}
+
+elseif (mysqli_num_rows($result) > 0) {
+
+    while ($row = mysqli_fetch_assoc($result)) {
+
+
+        // Skip rows with null or empty customer name
+        if (empty($row['cust_name'])) {
+            continue;
+        }
+
+
+        $total_due_amount +=
+            (float)($row["due_amount"] ?? 0);
+
+
+        $dueDate = null;
+
+        if (!empty($row["due_date"])) {
+
+            try {
+
+                $dueDate =
+                    new DateTime(
+                        $row["due_date"]
+                    );
+
+            } catch (Exception $e) {
+
+                $dueDate = null;
+
+            }
+
+        }
+
+
+        /* =================================================
+           BRANCH COLOR
+        ================================================= */
+
+        $branchClass = 'blue';
+
+        $branchLower =
+            strtolower(
+                trim(
+                    $row['branch'] ?? ''
+                )
+            );
+
+
+        if ($branchLower === 'nagpur') {
+
+            $branchClass = 'blue';
+
+        }
+
+        elseif ($branchLower === 'bramhapuri') {
+
+            $branchClass = 'green';
+
+        }
+
+        elseif (
+            $branchLower === 'chandrapur'
+            ||
+            $branchLower === 'chandreapur'
+        ) {
+
+            $branchClass = 'orange';
+
+        }
+
+        else {
+
+            $branchClass = 'blue';
+
+        }
+
+?>
+
+<tr>
+
+
+    <!-- =================================================
+         BRANCH
+    ================================================== -->
+
+    <td>
+
+        <span
+            class="
+                view-client-branch
+                <?= $branchClass; ?>
+            "
+        >
+
+            <?= htmlspecialchars(
+                $row["branch"] ?? '',
+                ENT_QUOTES,
+                'UTF-8'
+            ); ?>
+
+        </span>
+
+    </td>
+
+
+    <!-- =================================================
+         SERVICE
+    ================================================== -->
+
+    <td class="view-client-service">
+
+        <?= htmlspecialchars(
+            $row["services"] ?? '',
+            ENT_QUOTES,
+            'UTF-8'
+        ); ?>
+
+    </td>
+
+
+    <!-- =================================================
+         NAME
+    ================================================== -->
+
+    <td class="view-client-name">
+
+        <?= htmlspecialchars(
+            $row["cust_name"] ?? '',
+            ENT_QUOTES,
+            'UTF-8'
+        ); ?>
+
+    </td>
+
+
+    <!-- =================================================
+         TOTAL AMOUNT
+    ================================================== -->
+
+    <td class="view-client-total-amount">
+
+        ₹
+
+        <?= htmlspecialchars(
+            number_format(
+                (float)(
+                    $row["total_amount"] ?? 0
+                ),
+                2
+            ),
+            ENT_QUOTES,
+            'UTF-8'
+        ); ?>
+
+    </td>
+
+
+    <!-- =================================================
+         PAID AMOUNT
+    ================================================== -->
+
+    <td class="view-client-paid-amount">
+
+        ₹
+
+        <?= htmlspecialchars(
+            number_format(
+                (float)(
+                    $row["total_paid"] ?? 0
+                ),
+                2
+            ),
+            ENT_QUOTES,
+            'UTF-8'
+        ); ?>
+
+    </td>
+
+
+    <!-- =================================================
+         DUE AMOUNT
+    ================================================== -->
+
+    <td class="view-client-due-amount">
+
+        ₹
+
+        <?= htmlspecialchars(
+            number_format(
+                (float)(
+                    $row["due_amount"] ?? 0
+                ),
+                2
+            ),
+            ENT_QUOTES,
+            'UTF-8'
+        ); ?>
+
+    </td>
+
+
+    <!-- =================================================
+         DUE DATE
+    ================================================== -->
+
+    <td class="view-client-date-cell">
+
+        <span
+            class="due-date"
+            data-due-date="<?= $dueDate
+                ? $dueDate->format('Y-m-d')
+                : ''
+            ?>"
+        >
+
+            <?= htmlspecialchars(
+                $row["due_date"] ?? '',
+                ENT_QUOTES,
+                'UTF-8'
+            ); ?>
+
+        </span>
+
+    </td>
+
+
+    <!-- =================================================
+         REASON
+    ================================================== -->
+
+    <td class="view-client-reason">
+
+        <?= htmlspecialchars(
+            $row["defaulter_note"] ?? '',
+            ENT_QUOTES,
+            'UTF-8'
+        ); ?>
+
+    </td>
+
+
+    <!-- =================================================
+         ACTION
+    ================================================== -->
+
+    <td class="view-client-action">
+
+        <a
+            href="reactivate-client.php?Id=<?= urlencode(
+                $row['client_Id']
+            ); ?>"
+            class="view-client-action-btn"
+            onclick="return confirm(
+                'Are you sure you want to reactivate this client?'
+            );"
+        >
+
+            Reactivate
+
+        </a>
+
+    </td>
+
+
+</tr>
+
+<?php
+
+    }
+
+}
+
+else {
+
+?>
+
+<tr>
+
+    <td
+        colspan="9"
+        class="view-client-no-data"
+    >
+
+        No results found
+
+    </td>
+
+</tr>
+
+<?php
+
+}
+
+?>
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+
+                <!-- =================================================
+                     BOTTOM HORIZONTAL SCROLL
+                ================================================== -->
+
+                <div
+                    class="view-client-bottom-scroll"
+                    id="viewClientBottomScroll"
+                >
+
+                    <div
+                        class="view-client-bottom-scroll-inner"
+                        id="viewClientBottomScrollInner"
+                    ></div>
+
+                </div>
+
+
+                <!-- =================================================
+                     TOTAL DUE
+                ================================================== -->
+
+                <section id="total-due-amount">
+
+                    <h4>
+
+                        Total Due Amount (INR):
+
+                        <span id="total-due">
+
+                            <?= htmlspecialchars(
+                                number_format(
+                                    $total_due_amount,
+                                    2
+                                ),
+                                ENT_QUOTES,
+                                'UTF-8'
+                            ); ?>
+
+                        </span>
+
+                    </h4>
+
+                </section>
+
+
+            </div>
+
+        </div>
+
+    </section>
+
+</section>
+
+
+<!-- =========================================================
+     EXISTING JS
+========================================================= -->
+
+<script src="js/bootstrap.js"></script>
+<script src="js/jquery.dcjqaccordion.2.7.js"></script>
+<script src="js/scripts.js"></script>
+<script src="js/jquery.slimscroll.js"></script>
+<script src="js/jquery.nicescroll.js"></script>
+<script src="js/jquery.scrollTo.js"></script>
+
+
+<script>
+
+/* =========================================================
+   TOTAL DUE
+========================================================= */
+
+function calculateTotalDue() {
+
+    let totalDue = 0;
+
+    document
+        .querySelectorAll(
+            '#payments-table tbody tr'
+        )
+        .forEach(function(row) {
+
+            if (
+                row.style.display !== 'none'
+                &&
+                !row.querySelector(
+                    '.view-client-no-data'
+                )
+            ) {
+
+                const dueCell =
+                    row.querySelector(
+                        '.view-client-due-amount'
+                    );
+
+                if (!dueCell) {
+                    return;
+                }
+
+                const dueAmount =
+                    parseFloat(
+                        dueCell.textContent
+                            .replace(/,/g, '')
+                            .replace(/₹/g, '')
+                            .trim()
+                    ) || 0;
+
+                totalDue += dueAmount;
+
+            }
+
+        });
+
+
+    const totalElement =
+        document.getElementById(
+            'total-due'
+        );
+
+    if (totalElement) {
+
+        totalElement.textContent =
+            totalDue.toFixed(2);
+
+    }
+
+}
+
+
+/* =========================================================
+   SEARCH
+========================================================= */
+
+function searchPayments() {
+
+    const input =
+        document.getElementById(
+            'txt_searchall'
+        );
+
+    if (!input) {
+        return;
+    }
+
+    const query =
+        input.value
+            .toLowerCase()
+            .trim();
+
+
+    const rows =
+        document.querySelectorAll(
+            '#payments-table tbody tr'
+        );
+
+
+    rows.forEach(function(row) {
+
+        const noData =
+            row.querySelector(
+                '.view-client-no-data'
+            );
+
+        if (noData) {
+            return;
+        }
+
+
+        const name =
+            row.querySelector(
+                '.view-client-name'
+            )
+            ?.textContent
+            .toLowerCase() || '';
+
+
+        const branch =
+            row.querySelector(
+                '.view-client-branch'
+            )
+            ?.textContent
+            .toLowerCase() || '';
+
+
+        const service =
+            row.querySelector(
+                '.view-client-service'
+            )
+            ?.textContent
+            .toLowerCase() || '';
+
+
+        if (
+            query === ''
+            ||
+            name.includes(query)
+            ||
+            branch.includes(query)
+            ||
+            service.includes(query)
+        ) {
+
+            row.style.display = '';
+
+        }
+
+        else {
+
+            row.style.display = 'none';
+
+        }
+
+    });
+
+
+    calculateTotalDue();
+
+}
+
+
+/* =========================================================
+   SEARCH EVENT
+========================================================= */
+
+document.addEventListener(
+    'DOMContentLoaded',
+    function() {
+
+        const searchInput =
+            document.getElementById(
+                'txt_searchall'
+            );
+
+        if (searchInput) {
+
+            searchInput.addEventListener(
+                'input',
+                searchPayments
+            );
+
+        }
+
+    }
+);
+
+
+/* =========================================================
+   DUE DATE HIGHLIGHT
+========================================================= */
+
+function highlightDueDates() {
+
+    const now = new Date();
+
+    const today =
+        new Date(
+            now.getFullYear(),
+            now.getMonth(),
+            now.getDate()
+        );
+
+
+    document
+        .querySelectorAll(
+            '.due-date'
+        )
+        .forEach(function(span) {
+
+            const dueDateValue =
+                span.getAttribute(
+                    'data-due-date'
+                );
+
+
+            if (!dueDateValue) {
+                return;
+            }
+
+
+            const parts =
+                dueDateValue.split('-');
+
+
+            if (parts.length !== 3) {
+                return;
+            }
+
+
+            const dueDate =
+                new Date(
+                    parseInt(parts[0]),
+                    parseInt(parts[1]) - 1,
+                    parseInt(parts[2])
+                );
+
+
+            if (dueDate <= today) {
+
+                span.classList.add(
+                    'highlight-today'
+                );
+
+            }
+
+        });
+
+}
+
+
+/* =========================================================
+   BOTTOM SCROLLBAR SYNC
+========================================================= */
+
+document.addEventListener(
+    'DOMContentLoaded',
+    function() {
+
+        const bottomScroll =
+            document.getElementById(
+                'viewClientBottomScroll'
+            );
+
+
+        const bottomInner =
+            document.getElementById(
+                'viewClientBottomScrollInner'
+            );
+
+
+        const tableWrapper =
+            document.querySelector(
+                '.view-clients-table-wrapper'
+            );
+
+
+        if (
+            !bottomScroll
+            ||
+            !bottomInner
+            ||
+            !tableWrapper
+        ) {
+
+            return;
+
+        }
+
+
+        function updateScrollWidth() {
+
+            bottomInner.style.width =
+                tableWrapper.scrollWidth
+                + 'px';
+
+        }
+
+
+        updateScrollWidth();
+
+
+        window.addEventListener(
+            'resize',
+            updateScrollWidth
+        );
+
+
+        bottomScroll.addEventListener(
+            'scroll',
+            function() {
+
+                tableWrapper.scrollLeft =
+                    bottomScroll.scrollLeft;
+
+            }
+        );
+
+
+        tableWrapper.addEventListener(
+            'scroll',
+            function() {
+
+                bottomScroll.scrollLeft =
+                    tableWrapper.scrollLeft;
+
+            }
+        );
+
+    }
+);
+
+
+/* =========================================================
+   PAGE LOAD
+========================================================= */
+
+window.addEventListener(
+    'load',
+    function() {
+
+        calculateTotalDue();
+
+        highlightDueDates();
+
+    }
+);
+
+</script>
+
+
+</body>
+</html>

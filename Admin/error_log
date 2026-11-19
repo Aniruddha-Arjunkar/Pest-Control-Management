@@ -1,0 +1,16 @@
+[10-Dec-2019 05:36:36 UTC] PHP Warning:  require_once(db_connect.php): failed to open stream: No such file or directory in /home/shulventures/public_html/Admin/view_inquiry.php on line 2
+[10-Dec-2019 05:36:36 UTC] PHP Fatal error:  require_once(): Failed opening required 'db_connect.php' (include_path='.:/opt/cpanel/ea-php72/root/usr/share/pear') in /home/shulventures/public_html/Admin/view_inquiry.php on line 2
+[10-Dec-2019 05:36:41 UTC] PHP Warning:  require_once(db_connect.php): failed to open stream: No such file or directory in /home/shulventures/public_html/Admin/view_inquiry.php on line 2
+[10-Dec-2019 05:36:41 UTC] PHP Fatal error:  require_once(): Failed opening required 'db_connect.php' (include_path='.:/opt/cpanel/ea-php72/root/usr/share/pear') in /home/shulventures/public_html/Admin/view_inquiry.php on line 2
+[10-Dec-2019 05:36:43 UTC] PHP Warning:  require_once(db_connect.php): failed to open stream: No such file or directory in /home/shulventures/public_html/Admin/view_inquiry.php on line 2
+[10-Dec-2019 05:36:43 UTC] PHP Fatal error:  require_once(): Failed opening required 'db_connect.php' (include_path='.:/opt/cpanel/ea-php72/root/usr/share/pear') in /home/shulventures/public_html/Admin/view_inquiry.php on line 2
+[10-Dec-2019 05:37:57 UTC] PHP Warning:  require_once(db_connect.php): failed to open stream: No such file or directory in /home/shulventures/public_html/Admin/view_inquiry.php on line 2
+[10-Dec-2019 05:37:57 UTC] PHP Fatal error:  require_once(): Failed opening required 'db_connect.php' (include_path='.:/opt/cpanel/ea-php72/root/usr/share/pear') in /home/shulventures/public_html/Admin/view_inquiry.php on line 2
+[10-Dec-2019 05:37:59 UTC] PHP Warning:  require_once(db_connect.php): failed to open stream: No such file or directory in /home/shulventures/public_html/Admin/view_inquiry.php on line 2
+[10-Dec-2019 05:37:59 UTC] PHP Fatal error:  require_once(): Failed opening required 'db_connect.php' (include_path='.:/opt/cpanel/ea-php72/root/usr/share/pear') in /home/shulventures/public_html/Admin/view_inquiry.php on line 2
+[10-Dec-2019 05:38:01 UTC] PHP Warning:  require_once(db_connect.php): failed to open stream: No such file or directory in /home/shulventures/public_html/Admin/view_inquiry.php on line 2
+[10-Dec-2019 05:38:01 UTC] PHP Fatal error:  require_once(): Failed opening required 'db_connect.php' (include_path='.:/opt/cpanel/ea-php72/root/usr/share/pear') in /home/shulventures/public_html/Admin/view_inquiry.php on line 2
+[10-Dec-2019 05:38:03 UTC] PHP Warning:  require_once(db_connect.php): failed to open stream: No such file or directory in /home/shulventures/public_html/Admin/view_inquiry.php on line 2
+[10-Dec-2019 05:38:03 UTC] PHP Fatal error:  require_once(): Failed opening required 'db_connect.php' (include_path='.:/opt/cpanel/ea-php72/root/usr/share/pear') in /home/shulventures/public_html/Admin/view_inquiry.php on line 2
+[10-Dec-2019 05:38:05 UTC] PHP Warning:  require_once(db_connect.php): failed to open stream: No such file or directory in /home/shulventures/public_html/Admin/view_inquiry.php on line 2
+[10-Dec-2019 05:38:05 UTC] PHP Fatal error:  require_once(): Failed opening required 'db_connect.php' (include_path='.:/opt/cpanel/ea-php72/root/usr/share/pear') in /home/shulventures/public_html/Admin/view_inquiry.php on line 2

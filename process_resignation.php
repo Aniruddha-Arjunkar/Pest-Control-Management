@@ -1,0 +1,495 @@
+<?php
+
+// Start session for login check
+session_start();
+ob_start(); // Start output buffering
+
+if (!isset($_SESSION['email'])) {
+    $_SESSION['msg'] = "You must log in first";
+    header('location:login.php');
+    exit();
+}
+
+require_once 'db_connect.php';
+include 'header.php';
+
+// Fetch employee details if employee_id is set
+if (isset($_GET['employee_id'])) {
+
+    $employee_id = $_GET['employee_id'];
+
+    // Fetch employee details from the database
+    $sql = "SELECT * FROM tbl_employee WHERE Id = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("i", $employee_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $employee = $result->fetch_assoc();
+
+    // Check if employee exists
+    if (!$employee) {
+        $_SESSION['msg'] = "Employee not found.";
+        header('Location: view-employee.php');
+        exit();
+    }
+}
+
+
+// Process resignation form submission
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+
+    // Retrieve form data
+    $employee_id = $_POST['employee_id'];
+    $resignation_type = $_POST['resignation_type'];
+    $resignation_date = $_POST['resignation_date'];
+    $notice_period = isset($_POST['notice_period']) ? $_POST['notice_period'] : NULL;
+    $release_date = $_POST['release_date'];
+    $reason_for_leaving = $_POST['reason_for_leaving'];
+    $abscond_date = isset($_POST['abscond_date']) ? $_POST['abscond_date'] : NULL;
+
+
+    // Prepare SQL statement to update the employee's resignation data
+    if ($resignation_type === 'With Notice') {
+
+        $sql = "UPDATE tbl_employee 
+                SET resignation_type = ?, 
+                    resignation_date = ?, 
+                    notice_period = ?, 
+                    release_date = ?, 
+                    reason_for_leaving = ? 
+                WHERE Id = ?";
+
+        $stmt = $conn->prepare($sql);
+
+        $stmt->bind_param(
+            "sssssi",
+            $resignation_type,
+            $resignation_date,
+            $notice_period,
+            $release_date,
+            $reason_for_leaving,
+            $employee_id
+        );
+
+    } elseif ($resignation_type === 'Abscond') {
+
+        $sql = "UPDATE tbl_employee 
+                SET resignation_type = ?, 
+                    resignation_date = ?, 
+                    abscond_date = ?, 
+                    release_date = ?, 
+                    reason_for_leaving = ? 
+                WHERE Id = ?";
+
+        $stmt = $conn->prepare($sql);
+
+        $stmt->bind_param(
+            "sssssi",
+            $resignation_type,
+            $resignation_date,
+            $abscond_date,
+            $release_date,
+            $reason_for_leaving,
+            $employee_id
+        );
+
+    } else {
+
+        $sql = "UPDATE tbl_employee 
+                SET resignation_type = ?, 
+                    resignation_date = ?, 
+                    release_date = ?, 
+                    reason_for_leaving = ? 
+                WHERE Id = ?";
+
+        $stmt = $conn->prepare($sql);
+
+        $stmt->bind_param(
+            "ssssi",
+            $resignation_type,
+            $resignation_date,
+            $release_date,
+            $reason_for_leaving,
+            $employee_id
+        );
+    }
+
+
+    // Execute the query and check for success
+    if ($stmt->execute()) {
+
+        $_SESSION['msg'] = "Employee's resignation has been processed successfully.";
+
+    } else {
+
+        $_SESSION['msg'] = "There was an error processing the resignation.";
+    }
+
+
+    // Redirect to the employee list page
+    header('Location: view-employee.php');
+    exit();
+}
+
+?>
+
+
+<body>
+
+<section id="main-content">
+<section class="wrapper">
+
+<div class="reg-w3">
+
+    <div class="refollowup-card">
+
+        <!-- Header -->
+        <div class="refollowup-header">
+
+            <div class="refollowup-title">
+
+                <span class="phone-icon">📞</span>
+
+                <div>
+                    <h2>Process Employee Resignation</h2>
+                    <p>Update employee resignation details</p>
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Resignation Form -->
+        <form action="" method="POST" class="refollowup-form">
+
+            <input
+                type="hidden"
+                name="employee_id"
+                value="<?= $employee_id; ?>"
+            >
+
+
+            <!-- Resignation Type -->
+            <div class="form-row">
+
+                <div class="form-group full-width">
+
+                    <label for="resignation_type">
+                        Resignation Type
+                    </label>
+
+                    <select
+                        name="resignation_type"
+                        id="resignation_type"
+                    >
+
+                        <option
+                            value="With Notice"
+                            <?= $employee['resignation_type'] === 'With Notice' ? 'selected' : ''; ?>
+                        >
+                            With Notice
+                        </option>
+
+                        <option
+                            value="Without Notice"
+                            <?= $employee['resignation_type'] === 'Without Notice' ? 'selected' : ''; ?>
+                        >
+                            Without Notice
+                        </option>
+
+                        <option
+                            value="Abscond"
+                            <?= $employee['resignation_type'] === 'Abscond' ? 'selected' : ''; ?>
+                        >
+                            Abscond
+                        </option>
+
+                    </select>
+
+                </div>
+
+            </div>
+
+
+            <!-- Resignation Date -->
+            <div
+                class="form-row"
+                id="resignation_date_group"
+            >
+
+                <div class="form-group full-width">
+
+                    <label for="resignation_date">
+                        Resignation Date
+                    </label>
+
+                    <input
+                        type="date"
+                        name="resignation_date"
+                        id="resignation_date"
+                        value="<?= $employee['resignation_date']; ?>"
+                    >
+
+                </div>
+
+            </div>
+
+
+            <!-- Notice Period -->
+            <div
+                class="form-row"
+                id="notice_period_group"
+            >
+
+                <div class="form-group full-width">
+
+                    <label for="notice_period">
+                        Notice Period (Last Working Day)
+                    </label>
+
+                    <input
+                        type="date"
+                        name="notice_period"
+                        id="notice_period"
+                        value="<?= $employee['notice_period']; ?>"
+                    >
+
+                </div>
+
+            </div>
+
+
+            <!-- Release Date -->
+            <div
+                class="form-row"
+                id="release_date_group"
+            >
+
+                <div class="form-group full-width">
+
+                    <label for="release_date">
+                        Release Date
+                    </label>
+
+                    <input
+                        type="date"
+                        name="release_date"
+                        id="release_date"
+                        value="<?= $employee['release_date']; ?>"
+                    >
+
+                </div>
+
+            </div>
+
+
+            <!-- Abscond Date -->
+            <div
+                class="form-row"
+                id="abscond_date_group"
+            >
+
+                <div class="form-group full-width">
+
+                    <label for="abscond_date">
+                        Abscond Date
+                    </label>
+
+                    <input
+                        type="date"
+                        name="abscond_date"
+                        id="abscond_date"
+                        value="<?= $employee['abscond_date']; ?>"
+                    >
+
+                </div>
+
+            </div>
+
+
+            <!-- Reason For Leaving -->
+            <div
+                class="form-row"
+                id="reason_for_leaving_group"
+            >
+
+                <div class="form-group full-width">
+
+                    <label for="reason_for_leaving">
+                        Reason for Leaving
+                    </label>
+
+                    <textarea
+                        name="reason_for_leaving"
+                        id="reason_for_leaving"
+                        rows="4"
+                        required
+                    ><?= $employee['reason_for_leaving']; ?></textarea>
+
+                </div>
+
+            </div>
+
+
+            <!-- Submit Button -->
+            <div class="form-row">
+
+                <div class="form-group full-width">
+
+                    <button
+                        type="submit"
+                        class="submit-btn"
+                    >
+               📤  Submit Resignation
+                    </button>
+
+                </div>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+</section>
+</section>
+
+
+<script>
+
+document.addEventListener('DOMContentLoaded', function () {
+
+    const resignationType =
+        document.querySelector('select[name="resignation_type"]');
+
+    const resignationDateGroup =
+        document.getElementById('resignation_date_group');
+
+    const noticePeriodGroup =
+        document.getElementById('notice_period_group');
+
+    const releaseDateGroup =
+        document.getElementById('release_date_group');
+
+    const abscondDateGroup =
+        document.getElementById('abscond_date_group');
+
+    const reasonForLeavingGroup =
+        document.getElementById('reason_for_leaving_group');
+
+
+    const noticePeriodInput =
+        document.getElementById('notice_period');
+
+    const releaseDateInput =
+        document.getElementById('release_date');
+
+
+    function updateResignationFields() {
+
+        // ABScond
+        if (resignationType.value === 'Abscond') {
+
+            resignationDateGroup.style.display = 'none';
+
+            noticePeriodGroup.style.display = 'none';
+
+            releaseDateGroup.style.display = 'none';
+
+            abscondDateGroup.style.display = 'block';
+
+            reasonForLeavingGroup.style.display = 'block';
+
+
+            noticePeriodInput.disabled = true;
+
+            releaseDateInput.disabled = true;
+
+        }
+
+
+        // WITHOUT NOTICE
+        else if (resignationType.value === 'Without Notice') {
+
+            resignationDateGroup.style.display = 'block';
+
+            noticePeriodGroup.style.display = 'none';
+
+            releaseDateGroup.style.display = 'block';
+
+            abscondDateGroup.style.display = 'none';
+
+            reasonForLeavingGroup.style.display = 'block';
+
+
+            noticePeriodInput.disabled = true;
+
+            releaseDateInput.disabled = false;
+
+        }
+
+
+        // WITH NOTICE
+        else {
+
+            resignationDateGroup.style.display = 'block';
+
+            noticePeriodGroup.style.display = 'block';
+
+            releaseDateGroup.style.display = 'block';
+
+            abscondDateGroup.style.display = 'none';
+
+            reasonForLeavingGroup.style.display = 'block';
+
+
+            noticePeriodInput.disabled = false;
+
+            releaseDateInput.disabled = false;
+
+        }
+
+    }
+
+
+    // Change event
+    resignationType.addEventListener(
+        'change',
+        updateResignationFields
+    );
+
+
+    // Initial state
+    updateResignationFields();
+
+});
+
+</script>
+
+
+<script src="js/bootstrap.js"></script>
+<script src="js/jquery.dcjqaccordion.2.7.js"></script>
+<script src="js/scripts.js"></script>
+<script src="js/jquery.slimscroll.js"></script>
+<script src="js/jquery.nicescroll.js"></script>
+
+<!--[if lte IE 8]>
+<script
+    language="javascript"
+    type="text/javascript"
+    src="js/flot-chart/excanvas.min.js">
+</script>
+<![endif]-->
+
+<script src="js/jquery.scrollTo.js"></script>
+<script src="js/search.js"></script>
+
+</body>
+</html>
+
+<?php
+ob_end_flush(); // End output buffering and send output to browser
+?>

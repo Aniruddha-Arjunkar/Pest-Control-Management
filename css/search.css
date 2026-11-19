@@ -1,0 +1,9 @@
+#filter_users{
+  width:100%;
+  padding:10px;
+}
+
+#users-list{
+  margin:0;
+  padding:0;
+}

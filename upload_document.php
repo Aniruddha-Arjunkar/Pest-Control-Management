@@ -1,0 +1,369 @@
+<?php
+
+session_start();
+
+ob_start();
+
+/* =========================
+   LOGIN CHECK
+========================= */
+
+if (!isset($_SESSION['email'])) {
+
+    $_SESSION['msg'] = "You must log in first";
+
+    header('location:login.php');
+
+    exit();
+}
+
+
+/* =========================
+   LOGOUT
+========================= */
+
+if (isset($_GET['logout'])) {
+
+    session_destroy();
+
+    unset($_SESSION['email']);
+
+    header('location:login.php');
+
+    exit();
+}
+
+
+/* =========================
+   EMPLOYEE ID
+========================= */
+
+if (isset($_GET['employee_id'])) {
+
+    $employee_id = $_GET['employee_id'];
+
+} else {
+
+    die("No employee ID provided.");
+}
+
+
+/* =========================
+   DATABASE
+========================= */
+
+require_once 'db_connect.php';
+
+include 'header.php';
+
+
+/* =========================
+   DOCUMENT UPLOAD
+========================= */
+
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+
+    /* =========================
+       DOCUMENT DETAILS
+    ========================= */
+
+    $document_type =
+        $_POST['document_type'];
+
+    $upload_dir =
+        'uploads/' . $employee_id . '/';
+
+
+    /* =========================
+       CREATE DIRECTORY
+    ========================= */
+
+    if (!file_exists($upload_dir)) {
+
+        mkdir(
+            $upload_dir,
+            0777,
+            true
+        );
+    }
+
+
+    /* =========================
+       FILE DETAILS
+    ========================= */
+
+    $document_name =
+        $_FILES['document']['name'];
+
+    $document_tmp =
+        $_FILES['document']['tmp_name'];
+
+    $document_path =
+        $upload_dir . $document_name;
+
+
+    /* =========================
+       PDF VALIDATION
+    ========================= */
+
+    $file_ext =
+        pathinfo(
+            $document_name,
+            PATHINFO_EXTENSION
+        );
+
+
+    if ($file_ext != 'pdf') {
+
+        echo "
+            <div class='alert alert-danger'>
+                Error: Only PDF files are allowed!
+            </div>
+        ";
+
+    } else {
+
+
+        /* =========================
+           MOVE FILE
+        ========================= */
+
+        if (
+            move_uploaded_file(
+                $document_tmp,
+                $document_path
+            )
+        ) {
+
+
+            /* =========================
+               DATABASE INSERT
+            ========================= */
+
+            $sql = "
+                INSERT INTO employee_documents
+                (
+                    employee_id,
+                    document_type,
+                    document_name,
+                    file_path
+                )
+                VALUES
+                (
+                    '$employee_id',
+                    '$document_type',
+                    '$document_name',
+                    '$document_path'
+                )
+            ";
+
+
+            if ($conn->query($sql) === TRUE) {
+
+                echo "
+                    <div class='alert alert-success'>
+                        Document uploaded successfully.
+                    </div>
+                ";
+
+            } else {
+
+                echo "
+                    <div class='alert alert-danger'>
+                        Error: " .
+                        htmlspecialchars(
+                            $conn->error
+                        ) .
+                    "
+                    </div>
+                ";
+            }
+
+        } else {
+
+            echo "
+                <div class='alert alert-danger'>
+                    Error uploading document.
+                </div>
+            ";
+        }
+    }
+}
+
+
+$conn->close();
+
+?>
+
+
+<!-- =========================================
+     MAIN CONTENT
+========================================= -->
+
+<section id="main-content">
+
+    <section class="wrapper">
+
+        <div class="reg-w3">
+
+            <div class="refollowup-card">
+
+
+                <!-- =================================
+                     HEADER
+                ================================== -->
+
+                <div class="refollowup-header">
+
+                    <div class="refollowup-title">
+
+                        <span class="phone-icon">📄</span>
+
+                        <div>
+
+                            <h2>
+                                Upload Employee Document
+                            </h2>
+
+                            <p>
+                                Upload PDF document for
+                                Employee ID:
+                                <?= htmlspecialchars($employee_id); ?>
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- =================================
+                     FORM
+                ================================== -->
+
+                <form
+                    action="upload_document.php?employee_id=<?= urlencode($employee_id); ?>"
+                    method="POST"
+                    enctype="multipart/form-data"
+                    class="refollowup-form"
+                >
+
+
+                    <!-- DOCUMENT TYPE -->
+
+                    <div class="form-row">
+
+                        <div class="form-group full-width">
+
+                            <label for="document_type">
+                                Document Type <span>*</span>
+                            </label>
+
+                            <input
+                                type="text"
+                                name="document_type"
+                                id="document_type"
+                                placeholder="Enter document type"
+                                required
+                            >
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- DOCUMENT -->
+
+                    <div class="form-row">
+
+                        <div class="form-group full-width">
+
+                            <label for="document">
+                                Document (PDF only)
+                                <span>*</span>
+                            </label>
+
+                            <input
+                                type="file"
+                                name="document"
+                                id="document"
+                                accept=".pdf,application/pdf"
+                                required
+                            >
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- SUBMIT -->
+
+                    <div class="form-row">
+
+                        <div class="form-group full-width">
+
+                            <button
+                                type="submit"
+                                class="submit-btn"
+                            >
+
+                                <span>📤</span>
+
+                                Upload Document
+
+                            </button>
+
+                        </div>
+
+                    </div>
+
+
+                </form>
+
+            </div>
+
+        </div>
+
+    </section>
+
+</section>
+
+
+<!-- =========================================
+     SCRIPTS
+========================================= -->
+
+<script src="js/bootstrap.js"></script>
+
+<script src="js/jquery.dcjqaccordion.2.7.js"></script>
+
+<script src="js/scripts.js"></script>
+
+<script src="js/jquery.slimscroll.js"></script>
+
+<script src="js/jquery.nicescroll.js"></script>
+
+<!--[if lte IE 8]>
+<script
+    language="javascript"
+    type="text/javascript"
+    src="js/flot-chart/excanvas.min.js">
+</script>
+<![endif]-->
+
+<script src="js/jquery.scrollTo.js"></script>
+
+<script src="js/search.js"></script>
+
+
+</body>
+
+</html>
+
+
+<?php
+
+ob_end_flush();
+
+?>

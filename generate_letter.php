@@ -1,0 +1,384 @@
+<?php
+session_start();
+
+/* =========================
+   LOGIN CHECK
+========================= */
+if (!isset($_SESSION['email'])) {
+    $_SESSION['msg'] = "You must log in first";
+    header('Location: login.php');
+    exit;
+}
+
+/* =========================
+   LOGOUT
+========================= */
+if (isset($_GET['logout'])) {
+    session_destroy();
+    unset($_SESSION['email']);
+    header('Location: login.php');
+    exit;
+}
+
+/* =========================
+   DATABASE
+========================= */
+require_once 'db_connect.php';
+include 'header.php';
+?>
+
+
+
+<!-- =========================================
+     MAIN CONTENT
+========================================= -->
+
+<section id="main-content">
+
+    <section class="wrapper">
+
+        <div class="reg-w3">
+
+            <div class="refollowup-card">
+
+
+                <!-- =================================
+                     HEADER
+                ================================== -->
+
+                <div class="refollowup-header">
+
+                    <div class="refollowup-title">
+
+                        <span class="phone-icon">📄</span>
+
+                        <div>
+
+                            <h2>Generate Employee Letter</h2>
+
+                            <p>
+                                Search employee and generate required letter
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- =================================
+                     FORM AREA
+                ================================== -->
+
+                <div class="refollowup-form">
+
+
+                    <!-- =================================
+                         SEARCH FORM
+                    ================================== -->
+
+                    <form method="post" action="">
+
+
+                        <div class="form-row">
+
+                            <div class="form-group">
+
+                                <label>
+                                    Search Employee <span>*</span>
+                                </label>
+
+                                <input
+                                    type="text"
+                                    name="keyword"
+                                    placeholder="Search employee by name"
+                                    value="<?= htmlspecialchars($_POST['keyword'] ?? '') ?>"
+                                    required
+                                >
+
+                            </div>
+
+
+                            <div class="form-group"
+                                 style="flex:0 0 150px; display:flex; align-items:flex-end;">
+
+                                <button
+                                    type="submit"
+                                    class="search-btn"
+                                >
+
+                                    <i class="fa fa-search"></i>
+                                    Search
+
+                                </button>
+
+                            </div>
+
+                        </div>
+
+                    </form>
+
+
+                    <?php
+
+                    /* =================================
+                       SEARCH EMPLOYEE
+                    ================================= */
+
+                    if (isset($_POST['keyword'])) {
+
+                        $key = mysqli_real_escape_string(
+                            $conn,
+                            trim($_POST['keyword'])
+                        );
+
+                        $sql = "SELECT Id, cust_name, designation
+                                FROM tbl_employee
+                                WHERE cust_name LIKE '%$key%'";
+
+                        $result = mysqli_query($conn, $sql);
+
+
+                        if ($result && mysqli_num_rows($result) > 0) {
+
+                    ?>
+
+                            <!-- =================================
+                                 EMPLOYEE + LETTER FORM
+                            ================================= -->
+
+                            <form
+                                method="post"
+                                action="generate_letter_pdf.php"
+                                target="_blank"
+                                class="refollowup-form"
+                                style="padding:0; margin-top:20px;"
+                            >
+
+
+                                <!-- =================================
+                                     EMPLOYEE TABLE
+                                ================================= -->
+
+                                <div class="form-group">
+
+                                    <label>
+                                        Select Employee <span>*</span>
+                                    </label>
+
+
+                                    <div class="employee-table-wrapper">
+
+                                        <table class="employee-table">
+
+                                            <thead>
+
+                                                <tr>
+
+                                                    <th class="select-column">
+                                                        Select
+                                                    </th>
+
+                                                    <th>
+                                                        Employee Name
+                                                    </th>
+
+                                                    <th>
+                                                        Designation
+                                                    </th>
+
+                                                </tr>
+
+                                            </thead>
+
+
+                                            <tbody>
+
+                                            <?php
+
+                                            while (
+                                                $emp =
+                                                mysqli_fetch_assoc($result)
+                                            ) {
+
+                                            ?>
+
+                                                <tr>
+
+                                                    <td class="select-column">
+
+                                                        <input
+                                                            type="radio"
+                                                            name="employee_id"
+                                                            value="<?= htmlspecialchars($emp['Id']) ?>"
+                                                            required
+                                                        >
+
+                                                    </td>
+
+
+                                                    <td>
+
+                                                        <?= htmlspecialchars(
+                                                            $emp['cust_name']
+                                                        ) ?>
+
+                                                    </td>
+
+
+                                                    <td>
+
+                                                        <?= htmlspecialchars(
+                                                            $emp['designation']
+                                                        ) ?>
+
+                                                    </td>
+
+                                                </tr>
+
+                                            <?php
+
+                                            }
+
+                                            ?>
+
+                                            </tbody>
+
+                                        </table>
+
+                                    </div>
+
+                                </div>
+
+
+                                <!-- =================================
+                                     LETTER TYPE
+                                ================================= -->
+
+                                <div class="letter-box">
+
+                                    <div class="form-group"
+                                         style="margin-bottom:0;">
+
+                                        <label>
+                                            Select Letter Type <span>*</span>
+                                        </label>
+
+
+                                        <select
+                                            name="letter_type"
+                                            required
+                                        >
+
+                                            <option value="">
+                                                -- Select Letter --
+                                            </option>
+
+                                            <option value="offer">
+                                                Offer Letter
+                                            </option>
+
+                                            <option value="appointment">
+                                                Appointment Letter
+                                            </option>
+
+                                            <option value="relieving">
+                                                Relieving Letter
+                                            </option>
+
+                                            <option value="internship">
+                                                Internship Letter
+                                            </option>
+
+                                            <option value="experience">
+                                                Experience Letter
+                                            </option>
+
+                                        </select>
+
+                                    </div>
+
+                                </div>
+
+
+                                <!-- =================================
+                                     GENERATE BUTTON
+                                ================================= -->
+
+                                <button
+                                    type="submit"
+                                    class="submit-btn"
+                                >
+
+                                    <i class="fa fa-file-pdf-o"></i>
+
+                                    &nbsp; Generate Letter
+
+                                </button>
+
+
+                            </form>
+
+
+                    <?php
+
+                        } else {
+
+                    ?>
+
+                            <div class="alert alert-warning text-center">
+
+                                <i class="fa fa-exclamation-circle"></i>
+
+                                No employee found.
+
+                            </div>
+
+                    <?php
+
+                        }
+
+                    }
+
+                    ?>
+
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+</section>
+
+
+<!-- =========================================
+     JAVASCRIPT
+========================================= -->
+
+<script src="js/jquery.js"></script>
+
+<script src="js/bootstrap.js"></script>
+
+<script src="js/jquery.dcjqaccordion.2.7.js"></script>
+
+<script src="js/scripts.js"></script>
+
+<script src="js/jquery.slimscroll.js"></script>
+
+<script src="js/jquery.nicescroll.js"></script>
+
+<script src="js/jquery.scrollTo.js"></script>
+
+<script src="js/search.js"></script>
+
+
+</body>
+</html>
+
+<?php
+mysqli_close($conn);
+?>
