@@ -1,16 +1,16 @@
 <?php
 /* =========================================================
    SHUL HEADER + SIDEBAR
-========================================================= */
+   ========================================================= */
 
-if (session_status() === PHP_SESSION_NONE) {
+   if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
 /* ---------------------------
    LOGIN CHECK
----------------------------- */
-if (!isset($_SESSION['email'])) {
+   ---------------------------- */
+   if (!isset($_SESSION['email'])) {
     $_SESSION['msg'] = "You must log in first";
     header("Location: login.php");
     exit();
@@ -18,8 +18,8 @@ if (!isset($_SESSION['email'])) {
 
 /* ---------------------------
    DATABASE
----------------------------- */
-if (!isset($conn) || !($conn instanceof mysqli)) {
+   ---------------------------- */
+   if (!isset($conn) || !($conn instanceof mysqli)) {
     include_once __DIR__ . '/db_connect.php';
 }
 
@@ -27,12 +27,12 @@ $role = $_SESSION['role'] ?? '';
 
 /* ---------------------------
    HEADER USER
----------------------------- */
-$header_role  = $_SESSION['role'] ?? '';
-$header_email = $_SESSION['email'] ?? '';
-$header_name  = $_SESSION['name'] ?? '';
+   ---------------------------- */
+   $header_role  = $_SESSION['role'] ?? '';
+   $header_email = $_SESSION['email'] ?? '';
+   $header_name  = $_SESSION['name'] ?? '';
 
-if ($header_name === '' && $header_email !== '') {
+   if ($header_name === '' && $header_email !== '') {
     $header_name = ucfirst(strtok($header_email, '@'));
 }
 
@@ -42,8 +42,8 @@ if ($header_name === '') {
 
 /* =========================================================
    ACCESS FUNCTION
-========================================================= */
-if (!function_exists('hasAccess')) {
+   ========================================================= */
+   if (!function_exists('hasAccess')) {
 
     function hasAccess($module, $sub = null)
     {
@@ -75,11 +75,11 @@ if (!function_exists('hasAccess')) {
 
 /* =========================================================
    PENDING SERVICE COUNT
-========================================================= */
+   ========================================================= */
 
-$pending_service_count = 0;
+   $pending_service_count = 0;
 
-if (isset($conn) && $conn instanceof mysqli) {
+   if (isset($conn) && $conn instanceof mysqli) {
 
     $branch_filter = '';
 
@@ -96,12 +96,12 @@ if (isset($conn) && $conn instanceof mysqli) {
     }
 
     $pending_sql = "
-        SELECT COUNT(*) AS total
-        FROM tbl_pending_services ps
-        JOIN tbl_client c
-            ON ps.client_Id = c.Id
-        WHERE ps.status = 'Pending'
-        $branch_filter
+    SELECT COUNT(*) AS total
+    FROM tbl_pending_services ps
+    JOIN tbl_client c
+    ON ps.client_Id = c.Id
+    WHERE ps.status = 'Pending'
+    $branch_filter
     ";
 
     $pending_result = @mysqli_query($conn, $pending_sql);
@@ -111,17 +111,17 @@ if (isset($conn) && $conn instanceof mysqli) {
         $pending_row = mysqli_fetch_assoc($pending_result);
 
         $pending_service_count =
-            (int)($pending_row['total'] ?? 0);
+        (int)($pending_row['total'] ?? 0);
     }
 }
 
 /* =========================================================
    COMPLAINT COUNT
-========================================================= */
+   ========================================================= */
 
-$complaint_count = 0;
+   $complaint_count = 0;
 
-if (isset($conn) && $conn instanceof mysqli) {
+   if (isset($conn) && $conn instanceof mysqli) {
 
     $branch_filter_complaint = '';
 
@@ -136,28 +136,28 @@ if (isset($conn) && $conn instanceof mysqli) {
         );
 
         $branch_filter_complaint =
-            " AND cl.branch = '$branch_safe' ";
+        " AND cl.branch = '$branch_safe' ";
     }
 
     $complaint_sql = "
-        SELECT COUNT(*) AS total
-        FROM tbl_complaints cmp
-        JOIN tbl_client cl
-            ON cmp.client_id = cl.Id
-        WHERE 1=1
-        $branch_filter_complaint
+    SELECT COUNT(*) AS total
+    FROM tbl_complaints cmp
+    JOIN tbl_client cl
+    ON cmp.client_id = cl.Id
+    WHERE 1=1
+    $branch_filter_complaint
     ";
 
     $complaint_result =
-        @mysqli_query($conn, $complaint_sql);
+    @mysqli_query($conn, $complaint_sql);
 
     if ($complaint_result) {
 
         $complaint_row =
-            mysqli_fetch_assoc($complaint_result);
+        mysqli_fetch_assoc($complaint_result);
 
         $complaint_count =
-            (int)($complaint_row['total'] ?? 0);
+        (int)($complaint_row['total'] ?? 0);
     }
 }
 
@@ -165,12 +165,12 @@ include_once __DIR__ . '/notifications.php';
 
 /* =========================================================
    CHAT UNREAD COUNT
-========================================================= */
+   ========================================================= */
 
-$totalUnread = 0;
-$latestSenderName = '';
+   $totalUnread = 0;
+   $latestSenderName = '';
 
-if (
+   if (
     !empty($_SESSION['email']) &&
     isset($conn) &&
     $conn instanceof mysqli
@@ -194,10 +194,10 @@ if (
     if ($chat_result) {
 
         $chat_row =
-            mysqli_fetch_assoc($chat_result);
+        mysqli_fetch_assoc($chat_result);
 
         $totalUnread =
-            (int)($chat_row['total'] ?? 0);
+        (int)($chat_row['total'] ?? 0);
     }
 
     $sender_result = @mysqli_query(
@@ -206,7 +206,7 @@ if (
         SELECT u.name
         FROM chats c
         JOIN users u
-            ON c.sender_email = u.email
+        ON c.sender_email = u.email
         WHERE c.receiver_email = '$receiver'
         AND c.is_read = 0
         ORDER BY c.id DESC
@@ -220,10 +220,10 @@ if (
     ) {
 
         $sender_row =
-            mysqli_fetch_assoc($sender_result);
+        mysqli_fetch_assoc($sender_result);
 
         $latestSenderName =
-            $sender_row['name'] ?? '';
+        $sender_row['name'] ?? '';
     }
 }
 ?>
@@ -234,30 +234,30 @@ if (
 
 <head>
 
-<meta charset="UTF-8">
+    <meta charset="UTF-8">
 
-<meta
+    <meta
     name="viewport"
     content="width=device-width, initial-scale=1.0"
->
+    >
 
-<title>SHUL Ventures Pvt. Ltd.</title>
+    <title>SHUL Ventures Pvt. Ltd.</title>
 
-<link
+    <link
     rel="shortcut icon"
     type="image/png"
     href="image/logo.png"
->
+    >
 
-<link
+    <link
     rel="stylesheet"
     href="css/font-awesome.css"
->
+    >
 
-<link
+    <link
     rel="stylesheet"
     href="css/shul-dashboard.css"
->
+    >
 
 <link
     rel="stylesheet"
@@ -268,10 +268,10 @@ if (
 
 <body>
 
-<div
+    <div
     id="shul-app"
     class="shul-app-layout"
->
+    >
 
 <!-- =====================================================
      HEADER
@@ -285,8 +285,8 @@ if (
         <div class="shul-brand">
 
             <img
-                src="image/logo.png"
-                alt="SHUL"
+            src="image/logo.png"
+            alt="SHUL"
             >
 
             <div class="shul-brand-text">
@@ -304,101 +304,101 @@ if (
         </div>
 
         <button
-            type="button"
-            id="shulSidebarToggle"
-            class="shul-sidebar-toggle"
-            title="Toggle Sidebar"
+        type="button"
+        id="shulSidebarToggle"
+        class="shul-sidebar-toggle"
+        title="Toggle Sidebar"
         >
-            «
-        </button>
+        «
+    </button>
+
+</div>
+
+
+<!-- HEADER CONTENT -->
+
+<div class="shul-header-content">
+
+    <div class="shul-header-greeting">
+
+        <div class="shul-greeting-title">
+
+            Good Morning,
+            <?= htmlspecialchars($header_name) ?>
+
+            👋
+
+        </div>
+
+        <div class="shul-greeting-date">
+
+            <?= date('l, d F Y') ?>
+
+        </div>
 
     </div>
 
 
-    <!-- HEADER CONTENT -->
+    <div class="shul-header-actions">
 
-    <div class="shul-header-content">
+        <!-- SEARCH -->
 
-        <div class="shul-header-greeting">
+        <div class="shul-search-wrap">
 
-            <div class="shul-greeting-title">
+            <span class="shul-search-icon">
+                🔍
+            </span>
 
-                Good Morning,
-                <?= htmlspecialchars($header_name) ?>
+            <input
+            type="text"
+            id="sidebarSearch"
+            placeholder="Search clients..."
+            autocomplete="off"
+            onkeyup="searchSidebar(event)"
+            onkeydown="handleEnterSearch(event)"
+            >
 
-                👋
-
-            </div>
-
-            <div class="shul-greeting-date">
-
-                <?= date('l, d F Y') ?>
-
-            </div>
+            <div
+            id="searchResults"
+            class="global-search-results"
+            ></div>
 
         </div>
 
 
-        <div class="shul-header-actions">
+        <!-- LIVE -->
 
-            <!-- SEARCH -->
+        <div class="shul-live-badge">
 
-            <div class="shul-search-wrap">
+            <span></span>
 
-                <span class="shul-search-icon">
-                    🔍
-                </span>
+            Live
 
-                <input
-                    type="text"
-                    id="sidebarSearch"
-                    placeholder="Search clients..."
-                    autocomplete="off"
-                    onkeyup="searchSidebar(event)"
-                    onkeydown="handleEnterSearch(event)"
-                >
-
-                <div
-                    id="searchResults"
-                    class="global-search-results"
-                ></div>
-
-            </div>
+        </div>
 
 
-            <!-- LIVE -->
+        <!-- CHAT -->
 
-            <div class="shul-live-badge">
-
-                <span></span>
-
-                Live
-
-            </div>
-
-
-            <!-- CHAT -->
-
-            <button
-                type="button"
-                class="shul-icon-button"
-                title="Chat"
-                onclick="window.location.href='chat.php'"
-            >
-                💬
-            </button>
+        <button
+        type="button"
+        class="shul-icon-button"
+        title="Chat"
+        onclick="window.location.href='chat.php'"
+        >
+        💬
+    </button>
 
 
-            <!-- NOTIFICATION -->
+    <!-- NOTIFICATION -->
 
-           <div class="shul-notification-wrap">
+    <div class="shul-notification-wrap">
 
-    <button
+        <button
         type="button"
         class="shul-icon-button notification-button"
         title="Notifications"
         id="shulNotificationButton"
-    >
+        >
         🔔
     </button>
 
@@ -419,72 +419,72 @@ if (
 
 </div>
 
-            <!-- PROFILE -->
+<!-- PROFILE -->
 
-            <div class="shul-profile-wrap">
+<div class="shul-profile-wrap">
 
-                <button
-                    type="button"
-                    class="shul-profile-button"
-                    id="shulProfileButton"
-                >
+    <button
+    type="button"
+    class="shul-profile-button"
+    id="shulProfileButton"
+    >
 
-                    <span class="shul-avatar">
+    <span class="shul-avatar">
 
-                        <?= strtoupper(
-                            substr($header_name, 0, 1)
-                        ) ?>
+        <?= strtoupper(
+            substr($header_name, 0, 1)
+        ) ?>
 
-                    </span>
-
-
-                    <span class="shul-profile-copy">
-
-                        <strong>
-                            <?= htmlspecialchars($header_name) ?>
-                        </strong>
-
-                        <small>
-                            <?= htmlspecialchars(
-                                $header_role ?: 'Admin'
-                            ) ?>
-                        </small>
-
-                    </span>
+    </span>
 
 
-                    <span class="shul-profile-arrow">
-                        ▼
-                    </span>
+    <span class="shul-profile-copy">
 
-                </button>
+        <strong>
+            <?= htmlspecialchars($header_name) ?>
+        </strong>
+
+        <small>
+            <?= htmlspecialchars(
+                $header_role ?: 'Admin'
+            ) ?>
+        </small>
+
+    </span>
 
 
-                <div
-                    id="shulProfileMenu"
-                    class="shul-profile-menu"
-                >
+    <span class="shul-profile-arrow">
+        ▼
+    </span>
 
-                    <a href="profile.php">
-                        <i>👤</i>
-                        Profile
-                    </a>
+</button>
 
-                    <a
-                        href="logout.php"
-                        class="danger"
-                    >
-                        <i class="fa fa-sign-out"></i>
-                        Log Out
-                    </a>
 
-                </div>
+<div
+id="shulProfileMenu"
+class="shul-profile-menu"
+>
 
-            </div>
+<a href="profile.php">
+    <i>👤</i>
+    Profile
+</a>
 
-        </div>
+<a
+href="logout.php"
+class="danger"
+>
+<i class="fa fa-sign-out"></i>
+Log Out
+</a>
 
-    </div>
+</div>
+
+</div>
+
+</div>
+
+</div>
 
 </header>
 
@@ -492,8 +492,8 @@ if (
 <!-- MOBILE OVERLAY -->
 
 <div
-    id="shulSidebarOverlay"
-    class="shul-sidebar-overlay"
+id="shulSidebarOverlay"
+class="shul-sidebar-overlay"
 ></div>
 
 
@@ -502,32 +502,32 @@ if (
 ===================================================== -->
 
 <aside
-    id="shulSidebar"
-    class="shul-sidebar-scroll"
+id="shulSidebar"
+class="shul-sidebar-scroll"
 >
 
 <div class="php-sidebar-navigation">
 
-<ul
+    <ul
     class="sidebar-menu"
     id="nav-accordion"
->
+    >
 
 
 <!-- DASHBOARD -->
 
 <li>
 
-<a
+    <a
     href="homepage.php"
     class="active"
->
+    >
 
-🏠
+    🏠
 
-<span>
-    Dashboard
-</span>
+    <span>
+        Dashboard
+    </span>
 
 </a>
 
@@ -537,35 +537,35 @@ if (
 
 <li>
 
-<a href="chat.php">
+    <a href="chat.php">
 
-💬
+        💬
 
-<span>
-    Chat
-</span>
+        <span>
+            Chat
+        </span>
 
-<?php if ($totalUnread > 0): ?>
+        <?php if ($totalUnread > 0): ?>
 
-<span class="badge">
+            <span class="badge">
 
-<?= $totalUnread ?>
+                <?= $totalUnread ?>
 
-</span>
+            </span>
 
-<?php endif; ?>
+        <?php endif; ?>
 
-</a>
+    </a>
 
-<?php if ($latestSenderName !== ''): ?>
+    <?php if ($latestSenderName !== ''): ?>
 
-<div class="latest-sender">
+        <div class="latest-sender">
 
-<?= htmlspecialchars($latestSenderName) ?>
+            <?= htmlspecialchars($latestSenderName) ?>
 
-</div>
+        </div>
 
-<?php endif; ?>
+    <?php endif; ?>
 
 </li>
 
@@ -592,34 +592,34 @@ if (
 
 <li class="sub-menu">
 
-<a href="javascript:void(0);">
+    <a href="javascript:void(0);">
 
-🎯 
+        🎯 
 
-<span>
-    Lead Management
-</span>
+        <span>
+            Lead Management
+        </span>
 
-</a>
+    </a>
 
 
-<ul class="sub">
+    <ul class="sub">
 
- <!-- ADD INQUIRY -->
+       <!-- ADD INQUIRY -->
 
-<?php if (
-    hasAccess('inquiry','add')
-): ?>
+       <?php if (
+        hasAccess('inquiry','add')
+    ): ?>
 
-<li>
+    <li>
 
-<a href="add-inquiry.php">
+        <a href="add-inquiry.php">
 
-    Add Inquiry
+            Add Inquiry
 
-</a>
+        </a>
 
-</li>
+    </li>
 
 <?php endif; ?>   
 
@@ -628,9 +628,9 @@ if (
 ): ?>
 
 <li>
-<a href="view-inquiry.php">
-    View Inquiry
-</a>
+    <a href="view-inquiry.php">
+        View Inquiry
+    </a>
 </li>
 
 <?php endif; ?>
@@ -641,9 +641,9 @@ if (
 ): ?>
 
 <li>
-<a href="view-all-inquiry-clients.php">
-    View Followup
-</a>
+    <a href="view-all-inquiry-clients.php">
+        View Followup
+    </a>
 </li>
 
 <?php endif; ?>
@@ -654,9 +654,9 @@ if (
 ): ?>
 
 <li>
-<a href="view-todays-schedule-client.php">
-    Today's Schedule
-</a>
+    <a href="view-todays-schedule-client.php">
+        Today's Schedule
+    </a>
 </li>
 
 <?php endif; ?>
@@ -667,9 +667,9 @@ if (
 ): ?>
 
 <li>
-<a href="view_quotations.php">
-    Quotations
-</a>
+    <a href="view_quotations.php">
+        Quotations
+    </a>
 </li>
 
 <?php endif; ?>
@@ -698,17 +698,17 @@ if (
 
 <li class="sub-menu">
 
-<a href="javascript:void(0);">
-🐛
+    <a href="javascript:void(0);">
+        🐛
 
-<span>
-    Pest Control Management
-</span>
+        <span>
+            Pest Control Management
+        </span>
 
-</a>
+    </a>
 
 
-<ul class="sub">
+    <ul class="sub">
 
 
 <!-- CLIENTS -->
@@ -720,39 +720,39 @@ if (
 
 <li class="sub-menu">
 
-<a href="javascript:void(0);">
+    <a href="javascript:void(0);">
 
-<span>
-    Clients
-</span>
+        <span>
+            Clients
+        </span>
 
-</a>
-
-
-<ul class="sub">
-
-<?php if (
-    hasAccess('clients','view')
-): ?>
-
-<li>
-<a href="view-client.php">
-    View Clients
-</a>
-</li>
-
-<?php endif; ?>
+    </a>
 
 
-<?php if (
-    hasAccess('clients','certificates')
-): ?>
+    <ul class="sub">
 
-<li>
-<a href="view-sent-certificates.php">
-    Certificate Clients
-</a>
-</li>
+        <?php if (
+            hasAccess('clients','view')
+        ): ?>
+
+        <li>
+            <a href="view-client.php">
+                View Clients
+            </a>
+        </li>
+
+    <?php endif; ?>
+
+
+    <?php if (
+        hasAccess('clients','certificates')
+    ): ?>
+
+    <li>
+        <a href="view-sent-certificates.php">
+            Certificate Clients
+        </a>
+    </li>
 
 <?php endif; ?>
 
@@ -771,14 +771,14 @@ if (
 
 <li>
 
-<a href="view-AMC.php">
+    <a href="view-AMC.php">
 
 
-<span>
-    AMC Services
-</span>
+        <span>
+            AMC Services
+        </span>
 
-</a>
+    </a>
 
 </li>
 
@@ -793,22 +793,22 @@ if (
 
 <li>
 
-<a href="view-pending-service.php">
+    <a href="view-pending-service.php">
 
 
-<span>
-    Pending Service
-</span>
+        <span>
+            Pending Service
+        </span>
 
-<?php if (
-    $pending_service_count > 0
-): ?>
+        <?php if (
+            $pending_service_count > 0
+        ): ?>
 
-<span class="badge">
-    <?= $pending_service_count ?>
-</span>
+        <span class="badge">
+            <?= $pending_service_count ?>
+        </span>
 
-<?php endif; ?>
+    <?php endif; ?>
 
 </a>
 
@@ -825,39 +825,39 @@ if (
 
 <li class="sub-menu">
 
-<a href="javascript:void(0);">
+    <a href="javascript:void(0);">
 
 
-<span>
-    Complaints
-</span>
+        <span>
+            Complaints
+        </span>
 
-<?php if (
-    $complaint_count > 0
-): ?>
+        <?php if (
+            $complaint_count > 0
+        ): ?>
 
-<span class="badge">
-    <?= $complaint_count ?>
-</span>
+        <span class="badge">
+            <?= $complaint_count ?>
+        </span>
 
-<?php endif; ?>
+    <?php endif; ?>
 
 </a>
 
 
 <ul class="sub">
 
-<li>
-<a href="view-complaints.php">
-    View Complaints
-</a>
-</li>
+    <li>
+        <a href="view-complaints.php">
+            View Complaints
+        </a>
+    </li>
 
-<li>
-<a href="view-resolved-complaints.php">
-    Resolve Complaints
-</a>
-</li>
+    <li>
+        <a href="view-resolved-complaints.php">
+            Resolve Complaints
+        </a>
+    </li>
 
 </ul>
 
@@ -891,60 +891,60 @@ if (
 
 <li class="sub-menu">
 
-<a href="javascript:void(0);">
+    <a href="javascript:void(0);">
 
-💳
+        💳
 
-<span>
-    Accounts
-</span>
+        <span>
+            Accounts
+        </span>
 
-</a>
+    </a>
 
 
-<ul class="sub">
+    <ul class="sub">
 
 
 <!-- PAYMENTS -->
 
 <li class="sub-menu">
 
-<a href="javascript:void(0);">
+    <a href="javascript:void(0);">
 
-<i class="fa fa-money"></i>
+        <i class="fa fa-money"></i>
 
-<span>
-    Payments
-</span>
+        <span>
+            Payments
+        </span>
 
-</a>
-
-
-<ul class="sub">
-
-<?php if (
-    hasAccess('accounts','payments_due')
-): ?>
-
-<li>
-<a href="due-payments.php">
-    Due Payments
-</a>
-</li>
-
-<?php endif; ?>
+    </a>
 
 
-<?php if (
-    hasAccess('consultancy','payment_due') &&
-    $role !== 'super_admin'
-): ?>
+    <ul class="sub">
 
-<li>
-<a href="view-candidate-payment.php">
-    Due Payments (Consultancy)
-</a>
-</li>
+        <?php if (
+            hasAccess('accounts','payments_due')
+        ): ?>
+
+        <li>
+            <a href="due-payments.php">
+                Due Payments
+            </a>
+        </li>
+
+    <?php endif; ?>
+
+
+    <?php if (
+        hasAccess('consultancy','payment_due') &&
+        $role !== 'super_admin'
+    ): ?>
+
+    <li>
+        <a href="view-candidate-payment.php">
+            Due Payments (Consultancy)
+        </a>
+    </li>
 
 <?php endif; ?>
 
@@ -954,9 +954,9 @@ if (
 ): ?>
 
 <li>
-<a href="view-payments.php">
-    View Payments
-</a>
+    <a href="view-payments.php">
+        View Payments
+    </a>
 </li>
 
 <?php endif; ?>
@@ -967,9 +967,9 @@ if (
 ): ?>
 
 <li>
-<a href="view-defaulters.php">
-    Defaulter Payments
-</a>
+    <a href="view-defaulters.php">
+        Defaulter Payments
+    </a>
 </li>
 
 <?php endif; ?>
@@ -987,37 +987,37 @@ if (
 
 <li class="sub-menu">
 
-<a href="javascript:void(0);">
+    <a href="javascript:void(0);">
 
-<i class="fa fa-money"></i>
+        <i class="fa fa-money"></i>
 
-<span>
-    GST Bills
-</span>
+        <span>
+            GST Bills
+        </span>
 
-</a>
-
-
-<ul class="sub">
-
-<?php if (
-    hasAccess('accounts','gst_generate')
-): ?>
-
-<li>
-<a href="view-gst-client.php">
-    Generate Invoice
-</a>
-</li>
-
-<?php endif; ?>
+    </a>
 
 
-<li>
-<a href="view-gst-bills.php">
-    GST Invoices
-</a>
-</li>
+    <ul class="sub">
+
+        <?php if (
+            hasAccess('accounts','gst_generate')
+        ): ?>
+
+        <li>
+            <a href="view-gst-client.php">
+                Generate Invoice
+            </a>
+        </li>
+
+    <?php endif; ?>
+
+
+    <li>
+        <a href="view-gst-bills.php">
+            GST Invoices
+        </a>
+    </li>
 
 </ul>
 
@@ -1034,32 +1034,32 @@ if (
 
 <li class="sub-menu">
 
-<a href="javascript:void(0);">
+    <a href="javascript:void(0);">
 
-<i class="fa fa-money"></i>
+        <i class="fa fa-money"></i>
 
-<span>
-    Expenses
-</span>
+        <span>
+            Expenses
+        </span>
 
-</a>
+    </a>
 
 
-<ul class="sub">
+    <ul class="sub">
 
-<li>
-<a href="add expenses.php">
-    Add Expenses
-</a>
-</li>
+        <li>
+            <a href="add expenses.php">
+                Add Expenses
+            </a>
+        </li>
 
-<li>
-<a href="view-expenses.php">
-    View Expenses
-</a>
-</li>
+        <li>
+            <a href="view-expenses.php">
+                View Expenses
+            </a>
+        </li>
 
-</ul>
+    </ul>
 
 </li>
 
@@ -1074,32 +1074,32 @@ if (
 
 <li class="sub-menu">
 
-<a href="javascript:void(0);">
+    <a href="javascript:void(0);">
 
-<i class="fa fa-money"></i>
+        <i class="fa fa-money"></i>
 
-<span>
-    Advance
-</span>
+        <span>
+            Advance
+        </span>
 
-</a>
+    </a>
 
 
-<ul class="sub">
+    <ul class="sub">
 
-<li>
-<a href="add_advance.php">
-    Add Advance
-</a>
-</li>
+        <li>
+            <a href="add_advance.php">
+                Add Advance
+            </a>
+        </li>
 
-<li>
-<a href="view_advance.php">
-    View Advance
-</a>
-</li>
+        <li>
+            <a href="view_advance.php">
+                View Advance
+            </a>
+        </li>
 
-</ul>
+    </ul>
 
 </li>
 
@@ -1114,32 +1114,32 @@ if (
 
 <li class="sub-menu">
 
-<a href="javascript:void(0);">
+    <a href="javascript:void(0);">
 
-<i class="fa fa-credit-card"></i>
+        <i class="fa fa-credit-card"></i>
 
-<span>
-    TDS
-</span>
+        <span>
+            TDS
+        </span>
 
-</a>
+    </a>
 
 
-<ul class="sub">
+    <ul class="sub">
 
-<li>
-<a href="due-tds-payments.php">
-    Due TDS
-</a>
-</li>
+        <li>
+            <a href="due-tds-payments.php">
+                Due TDS
+            </a>
+        </li>
 
-<li>
-<a href="view-paid-tds.php">
-    Paid TDS
-</a>
-</li>
+        <li>
+            <a href="view-paid-tds.php">
+                Paid TDS
+            </a>
+        </li>
 
-</ul>
+    </ul>
 
 </li>
 
@@ -1164,38 +1164,38 @@ if (
 
 <li class="sub-menu">
 
-<a href="javascript:void(0);">
+    <a href="javascript:void(0);">
 
-👤
+        👤
 
-<span>
-    Clients
-</span>
+        <span>
+            Clients
+        </span>
 
-</a>
+    </a>
 
 
-<ul class="sub">
+    <ul class="sub">
 
-<li>
-<a href="view-client.php">
-    View Clients
-</a>
-</li>
+        <li>
+            <a href="view-client.php">
+                View Clients
+            </a>
+        </li>
 
-<li>
-<a href="view-AMC.php">
-    AMC Clients
-</a>
-</li>
+        <li>
+            <a href="view-AMC.php">
+                AMC Clients
+            </a>
+        </li>
 
-<li>
-<a href="view-sent-certificates.php">
-    Certificate Clients
-</a>
-</li>
+        <li>
+            <a href="view-sent-certificates.php">
+                Certificate Clients
+            </a>
+        </li>
 
-</ul>
+    </ul>
 
 </li>
 
@@ -1209,23 +1209,23 @@ if (
 
 <li>
 
-<a href="view-pending-service.php">
+    <a href="view-pending-service.php">
 
-<i class="fa fa-commenting"></i>
+        <i class="fa fa-commenting"></i>
 
-<span>
-    Pending Service
-</span>
+        <span>
+            Pending Service
+        </span>
 
-<?php if (
-    $pending_service_count > 0
-): ?>
+        <?php if (
+            $pending_service_count > 0
+        ): ?>
 
-<span class="badge">
-    <?= $pending_service_count ?>
-</span>
+        <span class="badge">
+            <?= $pending_service_count ?>
+        </span>
 
-<?php endif; ?>
+    <?php endif; ?>
 
 </a>
 
@@ -1241,40 +1241,40 @@ if (
 
 <li class="sub-menu">
 
-<a href="javascript:void(0);">
+    <a href="javascript:void(0);">
 
-<i class="fa fa-warning"></i>
+        <i class="fa fa-warning"></i>
 
-<span>
-    Complaints
-</span>
+        <span>
+            Complaints
+        </span>
 
-<?php if (
-    $complaint_count > 0
-): ?>
+        <?php if (
+            $complaint_count > 0
+        ): ?>
 
-<span class="badge">
-    <?= $complaint_count ?>
-</span>
+        <span class="badge">
+            <?= $complaint_count ?>
+        </span>
 
-<?php endif; ?>
+    <?php endif; ?>
 
 </a>
 
 
 <ul class="sub">
 
-<li>
-<a href="view-complaints.php">
-    View Complaints
-</a>
-</li>
+    <li>
+        <a href="view-complaints.php">
+            View Complaints
+        </a>
+    </li>
 
-<li>
-<a href="view-resolved-complaints.php">
-    Resolve Complaints
-</a>
-</li>
+    <li>
+        <a href="view-resolved-complaints.php">
+            Resolve Complaints
+        </a>
+    </li>
 
 </ul>
 
@@ -1290,15 +1290,15 @@ if (
 
 <li>
 
-<a href="due-client-payment.php">
+    <a href="due-client-payment.php">
 
-💳
+        💳
 
-<span>
-    Due Payments
-</span>
+        <span>
+            Due Payments
+        </span>
 
-</a>
+    </a>
 
 </li>
 
@@ -1317,68 +1317,68 @@ if (
 
 <li class="sub-menu">
 
-<a href="javascript:void(0);">
+    <a href="javascript:void(0);">
 
-👥
+        👥
 
-<span>
-    Employee Management
-</span>
+        <span>
+            Employee Management
+        </span>
 
-</a>
-
-
-<ul class="sub">
+    </a>
 
 
-<li class="sub-menu">
-
-<a href="javascript:void(0);">
-
-<i class="fa fa-user"></i>
-
-<span>
-    Employee
-</span>
-
-</a>
+    <ul class="sub">
 
 
-<ul class="sub">
+        <li class="sub-menu">
 
-<?php if (
-    hasAccess('employee_management','add')
-): ?>
+            <a href="javascript:void(0);">
 
-<li>
-<a href="add employee.php">
-    Add Employee
-</a>
-</li>
+                <i class="fa fa-user"></i>
 
-<?php endif; ?>
+                <span>
+                    Employee
+                </span>
+
+            </a>
 
 
-<?php if (
-    hasAccess('employee_management','view')
-): ?>
+            <ul class="sub">
 
-<li>
-<a href="view-employee.php">
-    View Employee
-</a>
-</li>
+                <?php if (
+                    hasAccess('employee_management','add')
+                ): ?>
 
-<?php endif; ?>
+                <li>
+                    <a href="add employee.php">
+                        Add Employee
+                    </a>
+                </li>
+
+            <?php endif; ?>
 
 
-<li>
-<a href="generate_letter.php">
-    Generate Letter
-</a>
-</li>
+            <?php if (
+                hasAccess('employee_management','view')
+            ): ?>
 
-</ul>
+            <li>
+                <a href="view-employee.php">
+                    View Employee
+                </a>
+            </li>
+
+        <?php endif; ?>
+
+
+        <li>
+            <a href="generate_letter.php">
+                Generate Letter
+            </a>
+        </li>
+
+    </ul>
 
 </li>
 
@@ -1389,26 +1389,26 @@ if (
 
 <li class="sub-menu">
 
-<a href="javascript:void(0);">
+    <a href="javascript:void(0);">
 
-<i class="fa fa-money"></i>
+        <i class="fa fa-money"></i>
 
-<span>
-    Salary
-</span>
+        <span>
+            Salary
+        </span>
 
-</a>
+    </a>
 
 
-<ul class="sub">
+    <ul class="sub">
 
-<li>
-<a href="add-salary.php">
-    Add Salary
-</a>
-</li>
+        <li>
+            <a href="add-salary.php">
+                Add Salary
+            </a>
+        </li>
 
-</ul>
+    </ul>
 
 </li>
 
@@ -1432,31 +1432,31 @@ if (
 
 <li class="sub-menu">
 
-<a href="javascript:void(0);">
-📅
+    <a href="javascript:void(0);">
+        📅
 
-<span>
-    Attendance Management
-</span>
+        <span>
+            Attendance Management
+        </span>
 
-</a>
+    </a>
 
 
-<ul class="sub">
+    <ul class="sub">
 
-<li>
-<a href="add-emp-attendance.php">
-    Add Attendance
-</a>
-</li>
+        <li>
+            <a href="add-emp-attendance.php">
+                Add Attendance
+            </a>
+        </li>
 
-<li>
-<a href="view-all-emp-attendance.php">
-    View Attendance
-</a>
-</li>
+        <li>
+            <a href="view-all-emp-attendance.php">
+                View Attendance
+            </a>
+        </li>
 
-</ul>
+    </ul>
 
 </li>
 
@@ -1473,62 +1473,62 @@ if (
 
 <li class="sub-menu">
 
-<a href="javascript:void(0);">
+    <a href="javascript:void(0);">
 
-📦
+        📦
 
-<span>
-    Inventory Management
-</span>
+        <span>
+            Inventory Management
+        </span>
 
-</a>
+    </a>
 
 
-<ul class="sub">
+    <ul class="sub">
 
-<li>
-<a href="add_material.php">
-    Add Material Lists
-</a>
-</li>
+        <li>
+            <a href="add_material.php">
+                Add Material Lists
+            </a>
+        </li>
 
-<li>
-<a href="view_materials.php">
-    View Material Lists
-</a>
-</li>
+        <li>
+            <a href="view_materials.php">
+                View Material Lists
+            </a>
+        </li>
 
-<li>
-<a href="add_stock.php">
-    Update Purchase Stock
-</a>
-</li>
+        <li>
+            <a href="add_stock.php">
+                Update Purchase Stock
+            </a>
+        </li>
 
-<li>
-<a href="view_purchases.php">
-    View Purchase Stock
-</a>
-</li>
+        <li>
+            <a href="view_purchases.php">
+                View Purchase Stock
+            </a>
+        </li>
 
-<li>
-<a href="view_stock.php">
-    View Available Materials
-</a>
-</li>
+        <li>
+            <a href="view_stock.php">
+                View Available Materials
+            </a>
+        </li>
 
-<li>
-<a href="stock-history-table.php">
-    Update Used Stock History
-</a>
-</li>
+        <li>
+            <a href="stock-history-table.php">
+                Update Used Stock History
+            </a>
+        </li>
 
-<li>
-<a href="view-materials-used.php">
-    View Used Materials Client
-</a>
-</li>
+        <li>
+            <a href="view-materials-used.php">
+                View Used Materials Client
+            </a>
+        </li>
 
-</ul>
+    </ul>
 
 </li>
 
@@ -1545,12 +1545,19 @@ if (
 <?php if (
     hasAccess('solar_management','inquiry_add') ||
     hasAccess('solar_management','inquiry_view') ||
+    hasAccess('solar_management','inquiry_refollowup') ||
+    hasAccess('solar_management','inquiry_visit') ||
+    hasAccess('solar_management','inquiry_service') ||
+    hasAccess('solar_management','inquiry_schedule') ||
     hasAccess('solar_management','client_add') ||
     hasAccess('solar_management','client_view') ||
+    hasAccess('solar_management','pending_clients')||
     hasAccess('solar_management','vendor_add') ||
     hasAccess('solar_management','vendor_view') ||
     hasAccess('solar_management','trader_add') ||
-    hasAccess('solar_management','trader_view')
+    hasAccess('solar_management','trader_view')||
+    hasAccess('solar_management','payment_due') ||
+    hasAccess('solar_management','payment_view')
 ): ?>
 
 <li class="sub-menu">
@@ -1584,145 +1591,256 @@ if (
             <ul class="sub">
 
                 <?php if (hasAccess('solar_management','inquiry_add')): ?>
-                <li>
-                    <a href="solar-add-inquiry.php">
-                        Add Inquiry
-                    </a>
-                </li>
+                    <li>
+                        <a href="solar-add-inquiry.php">
+                            Add Inquiry
+                        </a>
+                    </li>
                 <?php endif; ?>
 
                 <?php if (hasAccess('solar_management','inquiry_view')): ?>
-                <li>
-                    <a href="solar-view-inquiry.php">
-                        View Inquiry
-                    </a>
-                </li>
+                    <li>
+                        <a href="solar-view-inquiry.php">
+                            View Inquiry
+                        </a>
+                    </li>
                 <?php endif; ?>
 
-            </ul>
+                <?php if (hasAccess('solar_management','inquiry_refollowup')): ?>
+                    <li>
+                        <a href="solar-view-refollowup.php">
+                            View Re-followup
+                        </a>
+                    </li>
+                <?php endif; ?>
 
+                
+<!-- VIEW VISIT -->
+
+<?php if (hasAccess('solar_management','inquiry_visit')): ?>
+    <li>
+        <a href="solar-view-visit.php">
+            View Visit
+        </a>
+    </li>
+<?php endif; ?>
+
+
+<!-- VIEW FUTURE SERVICES -->
+
+<?php if (hasAccess('solar_management','inquiry_service')): ?>
+    <li>
+        <a href="solar-view-future.php">
+            View Future Services
+        </a>
+    </li>
+<?php endif; ?>
+
+
+<!-- VIEW SCHEDULE -->
+
+<?php if (hasAccess('solar_management','inquiry_schedule')): ?>
+    <li>
+        <a href="solar-view-schedule.php">
+            View Schedule
+        </a>
+    </li>
+<?php endif; ?>
+
+
+
+</ul>
+
+</li>
+
+<?php endif; ?>
+
+
+
+<!-- VENDOR -->
+
+<?php if (
+    hasAccess('solar_management','vendor_add') ||
+    hasAccess('solar_management','vendor_view')
+): ?>
+
+<li class="sub-menu">
+
+    <a href="javascript:void(0);">
+        <i class="fa fa-building"></i>
+        <span>Vendor</span>
+    </a>
+
+    <ul class="sub">
+
+        <?php if (hasAccess('solar_management','vendor_add')): ?>
+            <li>
+                <a href="solar-add-vendor.php">
+                    Add Vendor
+                </a>
+            </li>
+        <?php endif; ?>
+
+        <?php if (hasAccess('solar_management','vendor_view')): ?>
+            <li>
+                <a href="solar-view-vendor.php">
+                    View Vendor
+                </a>
+            </li>
+        <?php endif; ?>
+
+    </ul>
+
+</li>
+
+<?php endif; ?>
+
+
+<!-- TRADER -->
+
+<?php if (
+    hasAccess('solar_management','trader_add') ||
+    hasAccess('solar_management','trader_view')
+): ?>
+
+<li class="sub-menu">
+
+    <a href="javascript:void(0);">
+        <i class="fa fa-exchange"></i>
+        <span>Trader</span>
+    </a>
+
+    <ul class="sub">
+
+        <?php if (hasAccess('solar_management','trader_add')): ?>
+            <li>
+                <a href="solar-add-trader.php">
+                    Add Trader
+                </a>
+            </li>
+        <?php endif; ?>
+
+        <?php if (hasAccess('solar_management','trader_view')): ?>
+            <li>
+                <a href="solar-view-trader.php">
+                    View Trader
+                </a>
+            </li>
+        <?php endif; ?>
+
+    </ul>
+
+</li>
+
+<?php endif; ?>
+
+
+<!-- CLIENT -->
+
+<?php if (
+    hasAccess('solar_management','client_view') ||
+    hasAccess('solar_management','client_view_gst')
+): ?>
+
+<li class="sub-menu">
+
+    <a href="javascript:void(0);">
+        <i class="fa fa-users"></i>
+        <span>Clients</span>
+    </a>
+
+    <ul class="sub">
+
+        <?php if (hasAccess('solar_management','client_view')): ?>
+            <li>
+                <a href="solar-view-client.php">
+                    View Clients
+                </a>
+            </li>
+        <?php endif; ?>
+
+        <?php if (hasAccess('solar_management','client_view_gst')): ?>
+            <li>
+                <a href="solar-view-gst-client.php">
+                    GST Clients
+                </a>
+            </li>
+        <?php endif; ?>
+
+        <?php if (hasAccess('solar_management','pending_clients')): ?>
+            <li>
+                <a href="solar-all-pending-work.php">
+                    View Pending Clients
+                </a>
+            </li>
+        <?php endif; ?>
+
+    </ul>
+
+</li>
+
+<?php endif; ?>
+
+
+<!-- =====================================================
+     SOLAR PAYMENTS
+===================================================== -->
+
+<?php if (
+    hasAccess('solar_management','payment_due') ||
+    hasAccess('solar_management','payment_view')
+): ?>
+
+<li class="sub-menu">
+
+    <a href="javascript:void(0);">
+
+        <i class="fa fa-money"></i>
+
+        <span>
+            Payments
+        </span>
+
+    </a>
+
+    <ul class="sub">
+
+        <!-- DUE PAYMENTS -->
+
+        <?php if (
+            hasAccess('solar_management','payment_due')
+        ): ?>
+
+        <li>
+            <a href="solar-due-payment.php">
+                Due Payments
+            </a>
         </li>
 
         <?php endif; ?>
 
 
-        <!-- CLIENT -->
+        <!-- VIEW PAYMENTS -->
 
         <?php if (
-            hasAccess('solar_management','client_add') ||
-            hasAccess('solar_management','client_view')
+            hasAccess('solar_management','payment_view')
         ): ?>
 
-        <li class="sub-menu">
-
-            <a href="javascript:void(0);">
-                <i class="fa fa-users"></i>
-                <span>Client</span>
+        <li>
+            <a href="solar-view-payment.php">
+                View Payments
             </a>
-
-            <ul class="sub">
-
-                <?php if (hasAccess('solar_management','client_add')): ?>
-                <li>
-                    <a href="solar-add-client.php">
-                        Add Client
-                    </a>
-                </li>
-                <?php endif; ?>
-
-                <?php if (hasAccess('solar_management','client_view')): ?>
-                <li>
-                    <a href="solar-view-client.php">
-                        View Client
-                    </a>
-                </li>
-                <?php endif; ?>
-
-            </ul>
-
-        </li>
-
-        <?php endif; ?>
-
-
-        <!-- VENDOR -->
-
-        <?php if (
-            hasAccess('solar_management','vendor_add') ||
-            hasAccess('solar_management','vendor_view')
-        ): ?>
-
-        <li class="sub-menu">
-
-            <a href="javascript:void(0);">
-                <i class="fa fa-building"></i>
-                <span>Vendor</span>
-            </a>
-
-            <ul class="sub">
-
-                <?php if (hasAccess('solar_management','vendor_add')): ?>
-                <li>
-                    <a href="solar-add-vendor.php">
-                        Add Vendor
-                    </a>
-                </li>
-                <?php endif; ?>
-
-                <?php if (hasAccess('solar_management','vendor_view')): ?>
-                <li>
-                    <a href="solar-view-vendor.php">
-                        View Vendor
-                    </a>
-                </li>
-                <?php endif; ?>
-
-            </ul>
-
-        </li>
-
-        <?php endif; ?>
-
-
-        <!-- TRADER -->
-
-        <?php if (
-            hasAccess('solar_management','trader_add') ||
-            hasAccess('solar_management','trader_view')
-        ): ?>
-
-        <li class="sub-menu">
-
-            <a href="javascript:void(0);">
-                <i class="fa fa-exchange"></i>
-                <span>Trader</span>
-            </a>
-
-            <ul class="sub">
-
-                <?php if (hasAccess('solar_management','trader_add')): ?>
-                <li>
-                    <a href="solar-add-trader.php">
-                        Add Trader
-                    </a>
-                </li>
-                <?php endif; ?>
-
-                <?php if (hasAccess('solar_management','trader_view')): ?>
-                <li>
-                    <a href="solar-view-trader.php">
-                        View Trader
-                    </a>
-                </li>
-                <?php endif; ?>
-
-            </ul>
-
         </li>
 
         <?php endif; ?>
 
     </ul>
+
+</li>
+
+<?php endif; ?>
+
+</ul>
 
 </li>
 
@@ -1745,30 +1863,30 @@ if (
 
 <li>
 
-<a href="view-users.php">
+    <a href="view-users.php">
 
-👤
+        👤
 
-<span>
-    Users
-</span>
+        <span>
+            Users
+        </span>
 
-</a>
+    </a>
 
 </li>
 
 
 <li>
 
-<a href="trash.php">
+    <a href="trash.php">
 
-🗑️
+        🗑️
 
-<span>
-    Trash
-</span>
+        <span>
+            Trash
+        </span>
 
-</a>
+    </a>
 
 </li>
 
@@ -1784,15 +1902,15 @@ if (
 
 <li>
 
-<a href="stock-history-table.php">
+    <a href="stock-history-table.php">
 
-<i class="fa fa-history"></i>
+        <i class="fa fa-history"></i>
 
-<span>
-    Update Used Stock History
-</span>
+        <span>
+            Update Used Stock History
+        </span>
 
-</a>
+    </a>
 
 </li>
 
@@ -1803,16 +1921,16 @@ if (
 
 <li>
 
-<a
+    <a
     href="logout.php"
     class="logout-link"
->
+    >
 
-<i class="fa fa-sign-out"></i>
+    <i class="fa fa-sign-out"></i>
 
-<span>
-    Log Out
-</span>
+    <span>
+        Log Out
+    </span>
 
 </a>
 
@@ -1831,29 +1949,29 @@ if (
 ===================================================== -->
 
 <div
-    id="shul-main-content"
-    class="shul-main-content"
+id="shul-main-content"
+class="shul-main-content"
 >
 
 
 <script>
-document.addEventListener('DOMContentLoaded', function () {
+    document.addEventListener('DOMContentLoaded', function () {
 
-    const sidebar = document.getElementById('shulSidebar');
-    const app = document.getElementById('shul-app');
-    const toggle = document.getElementById('shulSidebarToggle');
-    const overlay = document.getElementById('shulSidebarOverlay');
+        const sidebar = document.getElementById('shulSidebar');
+        const app = document.getElementById('shul-app');
+        const toggle = document.getElementById('shulSidebarToggle');
+        const overlay = document.getElementById('shulSidebarOverlay');
 
-    if (!sidebar) {
-        return;
-    }
+        if (!sidebar) {
+            return;
+        }
 
 
     /* =====================================================
        SIDEBAR PARENT MENU
     ===================================================== */
 
-    sidebar
+        sidebar
         .querySelectorAll('.sidebar-menu li.sub-menu > a')
         .forEach(function (link) {
 
@@ -1869,21 +1987,21 @@ document.addEventListener('DOMContentLoaded', function () {
                     href === 'javascript:void(0);' ||
                     href === '#' ||
                     !href
-                ) {
+                    ) {
 
                     event.preventDefault();
-                    event.stopPropagation();
+                event.stopPropagation();
 
-                    const li = this.parentElement;
+                const li = this.parentElement;
 
                     /*
                      * Only toggle this submenu.
                      */
-                    li.classList.toggle('open');
+                li.classList.toggle('open');
 
-                }
+            }
 
-            });
+        });
 
         });
 
@@ -1892,7 +2010,7 @@ document.addEventListener('DOMContentLoaded', function () {
        CHILD LINKS
     ===================================================== */
 
-    sidebar
+        sidebar
         .querySelectorAll('.sidebar-menu ul.sub a')
         .forEach(function (link) {
 
@@ -1915,19 +2033,19 @@ document.addEventListener('DOMContentLoaded', function () {
        ACTIVE CURRENT PHP PAGE
     ===================================================== */
 
-    const currentPage =
+        const currentPage =
         window.location.pathname
-            .split('/')
-            .pop()
-            .toLowerCase();
+        .split('/')
+        .pop()
+        .toLowerCase();
 
 
-    sidebar
+        sidebar
         .querySelectorAll('.sidebar-menu a[href]')
         .forEach(function (link) {
 
             const href =
-                link.getAttribute('href');
+            link.getAttribute('href');
 
             if (!href) {
                 return;
@@ -1936,23 +2054,23 @@ document.addEventListener('DOMContentLoaded', function () {
             if (
                 href === '#' ||
                 href === 'javascript:void(0);'
-            ) {
+                ) {
                 return;
-            }
+        }
 
-            const linkPage =
-                href
-                    .split('/')
-                    .pop()
-                    .split('?')[0]
-                    .toLowerCase();
+        const linkPage =
+        href
+        .split('/')
+        .pop()
+        .split('?')[0]
+        .toLowerCase();
 
 
-            if (
-                linkPage === currentPage
+        if (
+            linkPage === currentPage
             ) {
 
-                link.classList.add('active');
+            link.classList.add('active');
 
 
                 /*
@@ -1960,53 +2078,53 @@ document.addEventListener('DOMContentLoaded', function () {
                  * submenus of the current page.
                  */
 
-                let parent =
-                    link.closest('li');
+        let parent =
+        link.closest('li');
 
-                while (parent) {
+        while (parent) {
 
-                    const parentMenu =
-                        parent.parentElement?.closest(
-                            'li.sub-menu'
-                        );
+            const parentMenu =
+            parent.parentElement?.closest(
+                'li.sub-menu'
+                );
 
-                    if (!parentMenu) {
-                        break;
-                    }
-
-                    parentMenu.classList.add('open');
-
-                    parent =
-                        parentMenu;
-
-                }
-
+            if (!parentMenu) {
+                break;
             }
 
-        });
+            parentMenu.classList.add('open');
+
+            parent =
+            parentMenu;
+
+        }
+
+    }
+
+});
 
 
     /* =====================================================
        SIDEBAR TOGGLE
     ===================================================== */
 
-    if (toggle) {
+        if (toggle) {
 
-        toggle.addEventListener(
-            'click',
-            function (event) {
+            toggle.addEventListener(
+                'click',
+                function (event) {
 
-                event.preventDefault();
-                event.stopPropagation();
+                    event.preventDefault();
+                    event.stopPropagation();
 
 
-                if (
-                    window.innerWidth <= 768
-                ) {
+                    if (
+                        window.innerWidth <= 768
+                        ) {
 
-                    app.classList.toggle(
-                        'sidebar-mobile-open'
-                    );
+                        app.classList.toggle(
+                            'sidebar-mobile-open'
+                            );
 
                     return;
 
@@ -2015,57 +2133,57 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 app.classList.toggle(
                     'sidebar-collapsed-state'
-                );
+                    );
 
 
                 if (
                     app.classList.contains(
                         'sidebar-collapsed-state'
-                    )
-                ) {
+                        )
+                    ) {
 
                     this.textContent = '»';
 
-                } else {
+            } else {
 
-                    this.textContent = '«';
-
-                }
+                this.textContent = '«';
 
             }
+
+        }
         );
 
-    }
+        }
 
 
     /* =====================================================
        MOBILE OVERLAY
     ===================================================== */
 
-    if (overlay) {
+        if (overlay) {
 
-        overlay.addEventListener(
-            'click',
-            function () {
+            overlay.addEventListener(
+                'click',
+                function () {
 
-                app.classList.remove(
-                    'sidebar-mobile-open'
+                    app.classList.remove(
+                        'sidebar-mobile-open'
+                        );
+
+                }
                 );
 
-            }
-        );
-
-    }
+        }
 
 
     /* =====================================================
        CLOSE MOBILE SIDEBAR AFTER PAGE LINK
     ===================================================== */
 
-    sidebar
+        sidebar
         .querySelectorAll(
             'a:not([href="javascript:void(0);"])'
-        )
+            )
         .forEach(function (link) {
 
             link.addEventListener(
@@ -2074,20 +2192,20 @@ document.addEventListener('DOMContentLoaded', function () {
 
                     if (
                         window.innerWidth <= 768
-                    ) {
+                        ) {
 
                         app.classList.remove(
                             'sidebar-mobile-open'
-                        );
-
-                    }
+                            );
 
                 }
+
+            }
             );
 
         });
 
-});
+    });
 
 
 
