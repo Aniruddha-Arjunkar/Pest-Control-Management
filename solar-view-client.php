@@ -1,606 +1,718 @@
-<?php
 
+<?php
 session_start();
 
-// LOGIN CHECK
+/* =========================================================
+   LOGIN CHECK
+========================================================= */
 
 if (!isset($_SESSION['email']) || !isset($_SESSION['role'])) {
-
     $_SESSION['msg'] = "You must log in first";
-
-    header('location:login.php');
-
+    header("Location: login.php");
     exit();
-
 }
 
-// LOGOUT
+/* =========================================================
+   LOGOUT
+========================================================= */
 
 if (isset($_GET['logout'])) {
-
     session_destroy();
-
-    unset($_SESSION['email']);
-
-    header('location:login.php');
-
+    header("Location: login.php");
     exit();
-
 }
 
-// DATABASE
+/* =========================================================
+   DATABASE
+========================================================= */
 
 require_once 'db_connect.php';
 
-include 'header.php';
+mysqli_set_charset($conn, "utf8mb4");
 
+/* =========================================================
+   HELPER
+========================================================= */
 
-// =========================================================
-// FILTER & SEARCH
-// =========================================================
+function e($value)
+{
+    return htmlspecialchars((string)($value ?? ''), ENT_QUOTES, 'UTF-8');
+}
+
+/* =========================================================
+   SEARCH AND FILTER
+========================================================= */
 
 $type = $_GET['type'] ?? '';
 $search = trim($_GET['search'] ?? '');
 
+$allowedTypes = ['', 'me', 'vendor', 'trader', 'gst'];
 
-// =========================================================
-// PAGE HEADING
-// =========================================================
-
-if ($type === 'trader') {
-    $heading = 'View Trader Clients';
-} elseif ($type === 'vendor') {
-    $heading = 'View Vendor Clients';
-} elseif ($type === 'me') {
-    $heading = 'View ME Clients';
-} else {
-    $heading = 'View All Clients';
+if (!in_array($type, $allowedTypes, true)) {
+    $type = '';
 }
 
+/* =========================================================
+   HEADING
+========================================================= */
 
-// =========================================================
-// DATABASE QUERY
-// =========================================================
+if ($type === 'trader') {
+    $heading = 'Solar Trader Clients';
+    $description = 'View all Solar Trader clients';
 
-$finalQuery = "
+} elseif ($type === 'vendor') {
+    $heading = 'Solar Vendor Clients';
+    $description = 'View all Solar Vendor clients';
+
+} elseif ($type === 'me') {
+    $heading = 'Solar ME Non-GST Clients';
+    $description = 'View all ME non-GST Solar clients';
+
+} elseif ($type === 'gst') {
+    $heading = 'Solar ME GST Clients';
+    $description = 'View all ME GST Solar clients';
+
+} else {
+    $heading = 'All Solar Clients';
+    $description = 'View and manage all non-GST Solar clients';
+}
+
+/* =========================================================
+   WHERE CONDITIONS
+========================================================= */
+
+$where = " WHERE 1=1 ";
+
+$params = [];
+$paramTypes = "";
+
+/* ME NON-GST CLIENTS */
+
+if ($type === 'me') {
+
+    $where .= " AND c.added_by = ? AND c.apply_gst = ? ";
+
+    $params[] = 'admin';
+    $params[] = 0;
+
+    $paramTypes .= "si";
+}
+
+/* VENDOR CLIENTS */
+
+elseif ($type === 'vendor') {
+
+    $where .= " AND c.added_by = ? AND c.apply_gst = ? ";
+
+    $params[] = 'vendor';
+    $params[] = 0;
+
+    $paramTypes .= "si";
+}
+
+/* TRADER CLIENTS */
+
+elseif ($type === 'trader') {
+
+    $where .= " AND c.added_by = ? ";
+
+    $params[] = 'trader';
+
+    $paramTypes .= "s";
+}
+
+/* ME GST CLIENTS */
+
+elseif ($type === 'gst') {
+
+    $where .= " AND c.added_by = ? AND c.apply_gst = ? ";
+
+    $params[] = 'admin';
+    $params[] = 1;
+
+    $paramTypes .= "si";
+}
+
+/* ALL CLIENTS - DEFAULT NON GST */
+
+else {
+
+    $where .= " AND c.apply_gst = ? ";
+
+    $params[] = 0;
+
+    $paramTypes .= "i";
+}
+
+/* =========================================================
+   SEARCH
+========================================================= */
+
+if ($search !== '') {
+
+    $where .= " AND (
+        c.cust_name LIKE ?
+        OR c.cust_phone LIKE ?
+        OR c.cust_email LIKE ?
+        OR c.cust_address LIKE ?
+        OR c.service LIKE ?
+    ) ";
+
+    $searchValue = "%" . $search . "%";
+
+    $params[] = $searchValue;
+    $params[] = $searchValue;
+    $params[] = $searchValue;
+    $params[] = $searchValue;
+    $params[] = $searchValue;
+
+    $paramTypes .= "sssss";
+}
+
+/* =========================================================
+   COUNT CLIENTS
+========================================================= */
+
+$countSql = "
+    SELECT COUNT(*) AS total
+    FROM tbl_solar_client c
+    $where
+";
+
+$countStmt = mysqli_prepare($conn, $countSql);
+
+if (!$countStmt) {
+    die("Count Query Error: " . mysqli_error($conn));
+}
+
+if (!empty($params)) {
+    mysqli_stmt_bind_param($countStmt, $paramTypes, ...$params);
+}
+
+mysqli_stmt_execute($countStmt);
+
+$countResult = mysqli_stmt_get_result($countStmt);
+$countRow = mysqli_fetch_assoc($countResult);
+
+$totalRecords = (int)($countRow['total'] ?? 0);
+
+mysqli_stmt_close($countStmt);
+
+/* =========================================================
+   FETCH SOLAR CLIENTS
+========================================================= */
+
+$sql = "
     SELECT
         c.*,
         v.vendor_name,
+
         (
             SELECT p.total_amount
-            FROM tbl_payment p
+            FROM tbl_solar_payment p
             WHERE p.client_id = c.id
             ORDER BY p.id DESC
             LIMIT 1
         ) AS final_amount
-    FROM tbl_client c
-    LEFT JOIN tbl_vendor v ON c.vendor_id = v.id
-    WHERE 1=1
+
+    FROM tbl_solar_client c
+
+    LEFT JOIN tbl_solar_vendor v
+        ON c.vendor_id = v.id
+
+    $where
+
+    ORDER BY c.id DESC
 ";
 
+$stmt = mysqli_prepare($conn, $sql);
 
-// ME CLIENTS
-if ($type === 'me') {
-
-    $finalQuery .= "
-        AND c.added_by = 'admin'
-        AND c.apply_gst = 0
-    ";
-
+if (!$stmt) {
+    die("Client Query Error: " . mysqli_error($conn));
 }
 
-// VENDOR CLIENTS
-elseif ($type === 'vendor') {
-
-    $finalQuery .= "
-        AND c.added_by = 'vendor'
-        AND c.apply_gst = 0
-    ";
-
+if (!empty($params)) {
+    mysqli_stmt_bind_param($stmt, $paramTypes, ...$params);
 }
 
-// TRADER CLIENTS
-elseif ($type === 'trader') {
+mysqli_stmt_execute($stmt);
 
-    $finalQuery .= "
-        AND c.added_by = 'trader'
-    ";
+$query_run = mysqli_stmt_get_result($stmt);
 
-}
+/* =========================================================
+   HEADER
+========================================================= */
 
-// ALL NON GST CLIENTS
-elseif ($type === '') {
-
-    $finalQuery .= "
-        AND c.apply_gst = 0
-    ";
-
-}
-
-
-// SEARCH
-if ($search !== '') {
-
-    $safe_search = mysqli_real_escape_string(
-        $conn,
-        $search
-    );
-
-    $finalQuery .= "
-        AND (
-            c.cust_name LIKE '%$safe_search%'
-            OR c.cust_phone LIKE '%$safe_search%'
-            OR c.cust_email LIKE '%$safe_search%'
-        )
-    ";
-
-}
-
-
-$finalQuery .= " ORDER BY c.id DESC";
-
-
-$query_run = mysqli_query($conn, $finalQuery);
-
-
-if (!$query_run) {
-
-    die("Query Error: " . mysqli_error($conn));
-
-}
-
-
-$total_records = mysqli_num_rows($query_run);
-
+include('header.php');
 ?>
+<style>
+/* ================================
+   SOLAR CLIENT FILTER BUTTONS
+================================ */
 
-<!-- =====================================================
-     MAIN CONTENT
-===================================================== -->
+.solar-client-filters {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 15px 10px;
+    margin-bottom: 10px;
+}
+
+.solar-client-filters a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 18px;
+    border-radius: 6px;
+    text-decoration: none;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    border: 1px solid transparent;
+    min-height: 40px;
+}
+
+/* ME GST */
+.solar-client-filters a:nth-child(1) {
+    background: #0d6efd;
+}
+
+/* ALL CLIENTS */
+.solar-client-filters a:nth-child(2) {
+    background: #343a40;
+}
+
+/* ME NON GST */
+.solar-client-filters a:nth-child(3) {
+    background: #198754;
+}
+
+/* VENDOR */
+.solar-client-filters a:nth-child(4) {
+    background: #f0ad4e;
+    color: #212529;
+}
+
+/* TRADER */
+.solar-client-filters a:nth-child(5) {
+    background: #0dcaf0;
+    color: #212529;
+}
+
+/* HOVER EFFECT */
+.solar-client-filters a:hover {
+    transform: translateY(-3px);
+    opacity: 0.9;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    text-decoration: none;
+    color: #fff;
+}
+
+/* MOBILE RESPONSIVE */
+@media (max-width: 576px) {
+
+    .solar-client-filters {
+        gap: 8px;
+    }
+
+    .solar-client-filters a {
+        flex: 1 1 45%;
+        padding: 9px 10px;
+        font-size: 12px;
+    }
+}
+
+    
+.solar-client-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.solar-client-toolbar .inquiry-search-wrapper {
+    width: 260px;
+    max-width: 100%;
+    flex-shrink: 0;
+    margin: 0;
+}
+
+.solar-client-toolbar .solar-client-filters {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 0;
+    margin: 0;
+}
+
+.solar-client-toolbar .solar-client-filters a {
+    padding: 9px 13px;
+    min-height: 36px;
+    font-size: 12px;
+}
+
+@media(max-width: 768px) {
+    .solar-client-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .solar-client-toolbar .inquiry-search-wrapper {
+        width: 100%;
+    }
+
+    .solar-client-toolbar .solar-client-filters {
+        justify-content: flex-start;
+    }
+}
+
+</style>
 
 <section id="main-content">
+<section class="wrapper">
 
-    <section class="wrapper">
+<div class="inquiry-page">
 
-        <div class="inquiry-page">
+    <!-- PAGE HEADER -->
 
-            <!-- =================================================
-                 PAGE HEADER
-            ================================================== -->
+    <div class="inquiry-page-header">
 
-            <div class="inquiry-page-header">
+        <h1>☀️ <?= e($heading); ?></h1>
 
-                <h1>
-                    👥 <?= htmlspecialchars($heading); ?>
-                </h1>
+        <p>
+            <?= e($description); ?>
+            <span class="inquiry-count">
+                <?= $totalRecords; ?> Records
+            </span>
+        </p>
 
-                <p>
+    </div>
 
-                    Showing all client records
+    <!-- CLIENT CARD -->
 
-                    <span class="inquiry-count">
-                        <?= $total_records; ?> Records
-                    </span>
+    <div class="inquiry-card">
 
-                </p>
+        <!-- SEARCH + FILTER BUTTONS -->
 
-            </div>
+       
+<div class="followup-top-area solar-client-toolbar">
 
+    <!-- LEFT SIDE SEARCH -->
 
-            <!-- =================================================
-                 CLIENT CARD
-            ================================================== -->
+    <form method="GET" class="inquiry-search-wrapper">
 
-            <div class="inquiry-card">
+        <input
+            type="text"
+            name="search"
+            id="txt_searchall"
+            class="inquiry-search"
+            placeholder="🔍 Search Solar Client..."
+            value="<?= e($search); ?>"
+        >
 
+        <?php if ($type !== '') { ?>
+            <input type="hidden" name="type" value="<?= e($type); ?>">
+        <?php } ?>
 
-                <!-- =================================================
-                     TOP AREA
-                ================================================== -->
+    </form>
 
-                <div class="followup-top-area">
+    <!-- RIGHT SIDE BUTTONS -->
 
+    <div class="solar-client-filters">
 
-                    <!-- SEARCH -->
+        <a href="solar-view-gst-client.php?type=gst">ME GST</a>
 
-                    <div class="inquiry-search-wrapper">
+        <a href="solar-view-client.php">All Clients</a>
 
-                        <span class="inquiry-search-icon">
-                            🔍
-                        </span>
+        <a href="solar-view-client.php?type=me">ME Non-GST</a>
 
-                        <input
-                            type="text"
-                            id="txt_searchall"
-                            class="inquiry-search"
-                            placeholder="Search by name, phone or email..."
-                            value="<?= htmlspecialchars($search, ENT_QUOTES, 'UTF-8'); ?>"
-                            autocomplete="off"
-                        >
+        <a href="solar-view-client.php?type=vendor">Vendor</a>
 
-                    </div>
+        <a href="solar-view-client.php?type=trader">Trader</a>
 
+    </div>
 
-                    <!-- FILTER LINKS -->
-
-                    <div class="followup-page-links">
-
-                        <a
-                            href="view-gst-client.php"
-                            class="followup-link purple"
-                        >
-                            GST Clients
-                        </a>
-
-                        <a
-                            href="view-client.php"
-                            class="followup-link green"
-                        >
-                            All Clients
-                        </a>
-
-                        <a
-                            href="view-client.php?type=me"
-                            class="followup-link blue"
-                        >
-                            ME Clients
-                        </a>
-
-                        <a
-                            href="view-client.php?type=vendor"
-                            class="followup-link orange"
-                        >
-                            Vendor Clients
-                        </a>
-
-                        <a
-                            href="view-client.php?type=trader"
-                            class="followup-link purple"
-                        >
-                            Trader Clients
-                        </a>
-
-                    </div>
-
-                </div>
+</div>
 
 
-                <!-- =================================================
-                     TABLE WRAPPER
-                ================================================== -->
+        <!-- TABLE -->
 
-                <div
-                    class="inquiry-table-wrapper"
-                    id="scrollable-content"
-                >
+        <div class="inquiry-table-wrapper" id="scrollable-content">
 
-                    <table
-                        class="inquiry-table"
-                        id="payments-table"
-                    >
+            <table class="inquiry-table" id="payments-table">
 
-                        <!-- TABLE HEADER -->
+                <thead>
+                    <tr>
+                        <th>Sr.No.</th>
+                        <th>Client Name</th>
+                        <th>Phone</th>
+                        <th>Email</th>
+                        <th>Address</th>
+                        <th>Service / Work</th>
+                        <th>Total Amount</th>
+                        <th>Added By</th>
+                        <th>Vendor</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
 
-                        <thead>
+                <tbody>
 
-                            <tr>
+                <?php
 
-                                <th>SR. NO.</th>
+                $serial = 1;
 
-                                <th>NAME</th>
+                if ($query_run && mysqli_num_rows($query_run) > 0) {
 
-                                <th>PHONE</th>
+                    while ($row = mysqli_fetch_assoc($query_run)) {
 
-                                <th>EMAIL</th>
+                ?>
 
-                                <th>ADDRESS</th>
+                    <tr class="data-row">
 
-                                <th>SERVICE / WORK</th>
+                        <td class="inquiry-sr">
+                            <?= $serial++; ?>
+                        </td>
 
-                                <th>TOTAL AMOUNT</th>
+                        <td class="inquiry-name">
+                            <?= e($row['cust_name']); ?>
+                        </td>
 
-                                <th>ADDED BY</th>
+                        <td class="inquiry-phone">
+                            <?= e($row['cust_phone']); ?>
+                        </td>
 
-                                <th>VENDOR</th>
+                        <td>
+                            <?= e($row['cust_email']); ?>
+                        </td>
 
-                                <th>ACTION</th>
+                        <td>
+                            <?= e($row['cust_address']); ?>
+                        </td>
 
-                            </tr>
+                        <td>
+                            <?= e($row['service'] ?: 'N/A'); ?>
+                        </td>
 
-                        </thead>
-
-
-                        <!-- TABLE BODY -->
-
-                        <tbody>
-
-                        <?php
-
-                        $serial = 1;
-
-                        if ($total_records > 0) {
-
-                            while ($row = mysqli_fetch_assoc($query_run)) {
-
-                                $id = (int)$row['id'];
-
-                                $name = htmlspecialchars(
-                                    $row['cust_name'] ?? '',
-                                    ENT_QUOTES,
-                                    'UTF-8'
+                        <td>
+                            <?php
+                            if ($row['final_amount'] !== null) {
+                                echo '₹ ' . number_format(
+                                    (float)$row['final_amount'],
+                                    2
                                 );
-
-                                $phone = htmlspecialchars(
-                                    $row['cust_phone'] ?? '',
-                                    ENT_QUOTES,
-                                    'UTF-8'
-                                );
-
-                                $email = htmlspecialchars(
-                                    $row['cust_email'] ?? '',
-                                    ENT_QUOTES,
-                                    'UTF-8'
-                                );
-
-                                $address = htmlspecialchars(
-                                    $row['cust_address'] ?? '',
-                                    ENT_QUOTES,
-                                    'UTF-8'
-                                );
-
-                                $service = htmlspecialchars(
-                                    $row['service'] ?? 'N/A',
-                                    ENT_QUOTES,
-                                    'UTF-8'
-                                );
-
-                                $amount = htmlspecialchars(
-                                    (string)($row['final_amount'] ?? 'N/A'),
-                                    ENT_QUOTES,
-                                    'UTF-8'
-                                );
-
-                                $vendor = htmlspecialchars(
-                                    $row['vendor_name'] ?? '-',
-                                    ENT_QUOTES,
-                                    'UTF-8'
-                                );
-
-                                $added_by = $row['added_by'] ?? '';
-
-                        ?>
-
-                            <tr class="data-row">
-
-                                <!-- SERIAL -->
-
-                                <td class="inquiry-sr">
-                                    <?= $serial++; ?>
-                                </td>
-
-
-                                <!-- NAME -->
-
-                                <td class="inquiry-name">
-                                    <?= $name; ?>
-                                </td>
-
-
-                                <!-- PHONE -->
-
-                                <td class="inquiry-phone">
-                                    <?= $phone; ?>
-                                </td>
-
-
-                                <!-- EMAIL -->
-
-                                <td>
-                                    <?= $email; ?>
-                                </td>
-
-
-                                <!-- ADDRESS -->
-
-                                <td class="inquiry-message">
-                                    <?= $address; ?>
-                                </td>
-
-
-                                <!-- SERVICE -->
-
-                                <td class="inquiry-service">
-                                    <?= $service; ?>
-                                </td>
-
-
-                                <!-- AMOUNT -->
-
-                                <td class="inquiry-date">
-                                    <?= $amount; ?>
-                                </td>
-
-
-                                <!-- ADDED BY -->
-
-                                <td>
-
-                                    <?php if ($added_by === 'vendor') { ?>
-
-                                        <span class="badge bg-warning text-dark">
-                                            Vendor
-                                        </span>
-
-                                    <?php } elseif ($added_by === 'trader') { ?>
-
-                                        <span class="badge bg-info text-dark">
-                                            Trader
-                                        </span>
-
-                                    <?php } else { ?>
-
-                                        <span class="badge bg-primary">
-                                            ME
-                                        </span>
-
-                                    <?php } ?>
-
-                                </td>
-
-
-                                <!-- VENDOR -->
-
-                                <td>
-                                    <?= $vendor; ?>
-                                </td>
-
-
-                                <!-- ACTION -->
-
-                                <td class="inquiry-action-cell">
-
-                                    <a
-                                        href="view-client-detail.php?client_id=<?= $id; ?>"
-                                        class="followup-link green"
-                                    >
-                                        View Details
-                                    </a>
-
-                                </td>
-
-                            </tr>
-
-                        <?php
-
+                            } else {
+                                echo 'N/A';
                             }
+                            ?>
+                        </td>
 
-                        } else {
+                        <!-- ADDED BY -->
 
-                        ?>
+                        <td>
 
-                            <tr class="no-data-row">
+                            <?php if ($row['added_by'] === 'vendor') { ?>
 
-                                <td colspan="10" class="no-inquiry">
+                                <span class="badge bg-warning text-dark">
+                                    Vendor
+                                </span>
 
-                                    No Clients Found.
+                            <?php } elseif ($row['added_by'] === 'trader') { ?>
 
-                                </td>
+                                <span class="badge bg-info text-dark">
+                                    Trader
+                                </span>
 
-                            </tr>
+                            <?php } else { ?>
 
-                        <?php
+                                <span class="badge bg-primary">
+                                    ME
+                                </span>
 
-                        }
+                            <?php } ?>
 
-                        ?>
+                        </td>
 
+                        <!-- VENDOR -->
 
-                        <!-- SEARCH NO RESULT -->
+                        <td>
+                            <?= e($row['vendor_name'] ?: '-'); ?>
+                        </td>
 
-                        <tr
-                            id="search-no-result"
-                            style="display:none;"
-                        >
+                        <!-- ACTION -->
 
-                            <td colspan="10" class="no-inquiry">
+                        <td class="inquiry-action-cell">
 
-                                No matching records found.
+                            <button
+                                type="button"
+                                class="action-btn"
+                                onclick="toggleActions(this)"
+                            >
+                                Action
+                            </button>
 
-                            </td>
+                            <div
+                                class="action-buttons"
+                                style="display:none;"
+                            >
 
-                        </tr>
+                                <?php if ($row['added_by'] === 'trader') { ?>
 
-                        </tbody>
+                                    <button type="button" class="primary2">
+                                        <a href="solar-view-trader-details.php?client_id=<?= (int)$row['id']; ?>">
+                                            View Details
+                                        </a>
+                                    </button>
 
-                    </table>
+                                <?php } else { ?>
 
-                </div>
+                                    <button type="button" class="primary2">
+                                        <a href="solar-view-client-detail.php?client_id=<?= (int)$row['id']; ?>">
+                                            View Details
+                                        </a>
+                                    </button>
 
-            </div>
+                                <?php } ?>
+
+                            </div>
+
+                        </td>
+
+                    </tr>
+
+                <?php
+
+                    }
+
+                } else {
+
+                    echo '<tr>
+                        <td colspan="10" style="text-align:center;">
+                            No Solar Clients Found
+                        </td>
+                    </tr>';
+
+                }
+
+                ?>
+
+                </tbody>
+
+            </table>
 
         </div>
 
-    </section>
+    </div>
+
+</div>
 
 </section>
+</section>
 
-
-<!-- =====================================================
-     LIVE TABLE SEARCH
-===================================================== -->
+<!-- ACTION MENU SCRIPT -->
 
 <script>
 
-document.addEventListener('DOMContentLoaded', function() {
+function toggleActions(button) {
 
-    const searchInput = document.getElementById('txt_searchall');
+    const currentCell = button.closest('.inquiry-action-cell');
+    const currentMenu = currentCell.querySelector('.action-buttons');
 
-    const table = document.getElementById('payments-table');
+    document.querySelectorAll('.action-buttons').forEach(function(menu) {
 
-    const noResult = document.getElementById('search-no-result');
+        if (menu !== currentMenu) {
+            menu.style.display = 'none';
 
-    if (!searchInput || !table || !noResult) {
-        return;
+            const otherButton = menu.parentElement.querySelector('.action-btn');
+
+            if (otherButton) {
+                otherButton.innerText = 'Action';
+            }
+        }
+
+    });
+
+    if (currentMenu.style.display === 'flex') {
+
+        currentMenu.style.display = 'none';
+        button.innerText = 'Action';
+
+    } else {
+
+        currentMenu.style.display = 'flex';
+        button.innerText = 'Actions';
+
     }
+}
 
-    searchInput.addEventListener('input', function() {
+/* CLOSE MENU ON OUTSIDE CLICK */
 
-        const searchValue = this.value.toLowerCase().trim();
+document.addEventListener('click', function(event) {
 
-        let visibleRows = 0;
+    if (!event.target.closest('.inquiry-action-cell')) {
 
-        const rows = table.querySelectorAll('tbody tr.data-row');
+        document.querySelectorAll('.action-buttons').forEach(function(menu) {
 
-        rows.forEach(function(row) {
+            menu.style.display = 'none';
 
-            const rowText = row.textContent.toLowerCase();
+            const button = menu.parentElement.querySelector('.action-btn');
 
-            if (
-                searchValue === '' ||
-                rowText.includes(searchValue)
-            ) {
-
-                row.style.display = '';
-
-                visibleRows++;
-
-            } else {
-
-                row.style.display = 'none';
-
+            if (button) {
+                button.innerText = 'Action';
             }
 
         });
 
-        noResult.style.display =
-            searchValue !== '' && visibleRows === 0
-                ? 'table-row'
-                : 'none';
+    }
 
-    });
+});
+
+/* CLOSE MENU ON ESCAPE */
+
+document.addEventListener('keydown', function(event) {
+
+    if (event.key === 'Escape') {
+
+        document.querySelectorAll('.action-buttons').forEach(function(menu) {
+
+            menu.style.display = 'none';
+
+            const button = menu.parentElement.querySelector('.action-btn');
+
+            if (button) {
+                button.innerText = 'Action';
+            }
+
+        });
+
+    }
 
 });
 
 </script>
 
-
-<!-- =====================================================
-     EXISTING JS FILES
-===================================================== -->
+<!-- SEARCH SCRIPT -->
 
 <script src="js/bootstrap.js"></script>
-
 <script src="js/jquery.dcjqaccordion.2.7.js"></script>
-
 <script src="js/scripts.js"></script>
-
 <script src="js/jquery.slimscroll.js"></script>
-
 <script src="js/jquery.nicescroll.js"></script>
-
 <script src="js/jquery.scrollTo.js"></script>
-
 <script src="js/search.js"></script>
 
 </body>
 </html>
+
+<?php
+
+mysqli_stmt_close($stmt);
+mysqli_close($conn);
+
+?>

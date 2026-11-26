@@ -259,6 +259,11 @@ include_once __DIR__ . '/notifications.php';
     href="css/shul-dashboard.css"
     >
 
+<link
+    rel="stylesheet"
+    href="css/SolarModule.css"
+>
+
 </head>
 
 <body>
@@ -1546,6 +1551,7 @@ class="shul-sidebar-scroll"
     hasAccess('solar_management','inquiry_schedule') ||
     hasAccess('solar_management','client_add') ||
     hasAccess('solar_management','client_view') ||
+    hasAccess('solar_management','pending_clients')||
     hasAccess('solar_management','vendor_add') ||
     hasAccess('solar_management','vendor_view') ||
     hasAccess('solar_management','trader_add') ||
@@ -1650,44 +1656,6 @@ class="shul-sidebar-scroll"
 <?php endif; ?>
 
 
-<!-- CLIENT -->
-
-<?php if (
-    hasAccess('solar_management','client_view') ||
-    hasAccess('solar_management','client_view_gst')
-): ?>
-
-<li class="sub-menu">
-
-    <a href="javascript:void(0);">
-        <i class="fa fa-users"></i>
-        <span>Clients</span>
-    </a>
-
-    <ul class="sub">
-
-        <?php if (hasAccess('solar_management','client_view')): ?>
-            <li>
-                <a href="solar-view-client.php">
-                    View Clients
-                </a>
-            </li>
-        <?php endif; ?>
-
-        <?php if (hasAccess('solar_management','client_view_gst')): ?>
-            <li>
-                <a href="solar-view-gst-client.php">
-                    GST Clients
-                </a>
-            </li>
-        <?php endif; ?>
-
-    </ul>
-
-</li>
-
-<?php endif; ?>
-
 
 <!-- VENDOR -->
 
@@ -1756,6 +1724,53 @@ class="shul-sidebar-scroll"
             <li>
                 <a href="solar-view-trader.php">
                     View Trader
+                </a>
+            </li>
+        <?php endif; ?>
+
+    </ul>
+
+</li>
+
+<?php endif; ?>
+
+
+<!-- CLIENT -->
+
+<?php if (
+    hasAccess('solar_management','client_view') ||
+    hasAccess('solar_management','client_view_gst')
+): ?>
+
+<li class="sub-menu">
+
+    <a href="javascript:void(0);">
+        <i class="fa fa-users"></i>
+        <span>Clients</span>
+    </a>
+
+    <ul class="sub">
+
+        <?php if (hasAccess('solar_management','client_view')): ?>
+            <li>
+                <a href="solar-view-client.php">
+                    View Clients
+                </a>
+            </li>
+        <?php endif; ?>
+
+        <?php if (hasAccess('solar_management','client_view_gst')): ?>
+            <li>
+                <a href="solar-view-gst-client.php">
+                    GST Clients
+                </a>
+            </li>
+        <?php endif; ?>
+
+        <?php if (hasAccess('solar_management','pending_clients')): ?>
+            <li>
+                <a href="solar-all-pending-work.php">
+                    View Pending Clients
                 </a>
             </li>
         <?php endif; ?>

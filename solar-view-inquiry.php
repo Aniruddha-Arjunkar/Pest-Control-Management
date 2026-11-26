@@ -1,454 +1,473 @@
-
 <?php
+
 session_start();
 
-if (!isset($_SESSION['email'])) {
+
+// =========================================================
+// LOGIN CHECK
+// =========================================================
+
+if (!isset($_SESSION['email']) || !isset($_SESSION['role'])) {
+
     $_SESSION['msg'] = "You must log in first";
+
     header('location:login.php');
     exit();
 }
+
+
+// =========================================================
+// LOGOUT
+// =========================================================
 
 if (isset($_GET['logout'])) {
+
     session_destroy();
-    unset($_SESSION['email']);
+
     header('location:login.php');
     exit();
 }
 
+
+// =========================================================
+// DATABASE & HEADER
+// =========================================================
+
 require_once 'db_connect.php';
+
 include 'header.php';
 
 
 // =========================================================
-// SEARCH
+// SEARCH LOGIC
 // =========================================================
 
 $search = trim($_GET['search'] ?? '');
 
+$where = "WHERE re_followup_date IS NULL
+          AND visit_date IS NULL";
+
+$params = [];
+$types = '';
+
+if ($search !== '') {
+
+    $where .= " AND (
+        name LIKE ?
+        OR phone LIKE ?
+        OR email LIKE ?
+        OR address LIKE ?
+        OR message LIKE ?
+    )";
+
+    $searchValue = "%{$search}%";
+
+    $params = [
+        $searchValue,
+        $searchValue,
+        $searchValue,
+        $searchValue,
+        $searchValue
+    ];
+
+    $types = "sssss";
+}
+
 
 // =========================================================
-// TOTAL INQUIRY COUNT
+// TOTAL RECORDS
 // =========================================================
 
 $count_sql = "
     SELECT COUNT(*) AS total
     FROM tbl_solar_inquiry
-    WHERE re_followup_date IS NULL
-    AND visit_date IS NULL
+    $where
 ";
 
-$count_result = mysqli_query($conn, $count_sql);
+$count_stmt = mysqli_prepare($conn, $count_sql);
 
-$total_inquiries = 0;
-
-if ($count_result) {
-    $count_row = mysqli_fetch_assoc($count_result);
-    $total_inquiries = (int)$count_row['total'];
+if ($types !== '') {
+    mysqli_stmt_bind_param($count_stmt, $types, ...$params);
 }
+
+mysqli_stmt_execute($count_stmt);
+
+$count_result = mysqli_stmt_get_result($count_stmt);
+
+$count_row = mysqli_fetch_assoc($count_result);
+
+$total_records = (int)($count_row['total'] ?? 0);
 
 
 // =========================================================
 // GET INQUIRIES
 // =========================================================
 
-if ($search !== '') {
+$sql = "
+    SELECT
+        id,
+        name,
+        phone,
+        email,
+        address,
+        message,
+        inq_date
+    FROM tbl_solar_inquiry
+    $where
+    ORDER BY id DESC
+";
 
-    $sql = "
-        SELECT *
-        FROM tbl_solar_inquiry
-        WHERE
-        (
-            name LIKE ?
-            OR phone LIKE ?
-            OR email LIKE ?
-            OR address LIKE ?
-            OR message LIKE ?
-        )
-        AND re_followup_date IS NULL
-        AND visit_date IS NULL
-        ORDER BY id DESC
-    ";
+$stmt = mysqli_prepare($conn, $sql);
 
-    $stmt = mysqli_prepare($conn, $sql);
+if ($types !== '') {
+    mysqli_stmt_bind_param($stmt, $types, ...$params);
+}
 
-    $search_value = "%{$search}%";
+mysqli_stmt_execute($stmt);
 
-    mysqli_stmt_bind_param(
-        $stmt,
-        "sssss",
-        $search_value,
-        $search_value,
-        $search_value,
-        $search_value,
-        $search_value
+$result = mysqli_stmt_get_result($stmt);
+
+
+// =========================================================
+// ESCAPE FUNCTION
+// =========================================================
+
+function e($value) {
+    return htmlspecialchars(
+        (string)($value ?? ''),
+        ENT_QUOTES,
+        'UTF-8'
     );
-
-    mysqli_stmt_execute($stmt);
-
-    $result = mysqli_stmt_get_result($stmt);
-
-} else {
-
-    $sql = "
-        SELECT *
-        FROM tbl_solar_inquiry
-        WHERE re_followup_date IS NULL
-        AND visit_date IS NULL
-        ORDER BY id DESC
-    ";
-
-    $result = mysqli_query($conn, $sql);
 }
 
 ?>
 
+<!-- =====================================================
+     MAIN CONTENT
+===================================================== -->
+
 <section id="main-content">
 
-<section class="wrapper">
+    <section class="wrapper">
 
-<div class="inquiry-page">
+        <div class="inquiry-page">
 
-    <!-- PAGE HEADER -->
+            <!-- PAGE HEADER -->
 
-    <div class="inquiry-page-header">
+            <div class="inquiry-page-header">
 
-        <h1>💬 View Solar Inquiries</h1>
+                <h1>📋 View Inquiries</h1>
 
-        <p>
-            Showing all customer inquiries
+                <p>
+                    Showing all new inquiry records
 
-            <span class="inquiry-count">
-                <?= $total_inquiries; ?> Records
-            </span>
-        </p>
-
-    </div>
-
-
-    <!-- INQUIRY CARD -->
-
-    <div class="inquiry-card">
-
-
-        <!-- SEARCH -->
-
-        <form method="GET" action="">
-
-            <div class="inquiry-search-wrapper">
-
-                <span class="inquiry-search-icon">
-                    🔍
-                </span>
-
-                <input
-                    type="text"
-                    name="search"
-                    class="inquiry-search"
-                    placeholder="Search by name, phone, email or message..."
-                    value="<?= htmlspecialchars($search, ENT_QUOTES, 'UTF-8'); ?>"
-                    autocomplete="off"
-                >
+                    <span class="inquiry-count">
+                        <?= $total_records; ?> Records
+                    </span>
+                </p>
 
             </div>
 
-        </form>
 
+            <!-- MAIN CARD -->
 
-        <!-- TABLE -->
+            <div class="inquiry-card">
 
-        <div
-            class="inquiry-table-wrapper refollowup-table-wrapper"
-            id="scrollable-content"
-        >
+                <!-- TOP AREA -->
 
-            <table
-                class="inquiry-table"
-                id="payments-table"
-            >
+                <div class="followup-top-area">
 
-                <thead>
+                    <!-- SEARCH -->
 
-                    <tr>
+                   <div class="inquiry-search-wrapper">
 
-                        <th>SR. NO.</th>
+                        <span class="inquiry-search-icon">
+                            🔍
+                        </span>
 
-                        <th>NAME</th>
+                        <input
+                            type="text"
+                            id="txt_searchall"
+                            class="inquiry-search"
+                            placeholder="Search by name, phone or email..."
+                            value="<?= htmlspecialchars($search, ENT_QUOTES, 'UTF-8'); ?>"
+                            autocomplete="off"
+                        >
 
-                        <th>PHONE</th>
+                    </div>
 
-                        <th>EMAIL</th>
+                  
+                </div>
 
-                        <th>ADDRESS</th>
 
-                        <th>MESSAGE</th>
+                <!-- TABLE -->
 
-                        <th>INQUIRY DATE</th>
+                <div
+                    class="inquiry-table-wrapper"
+                    id="scrollable-content"
+                >
 
-                        <th>ACTION</th>
+                    <table
+                        class="inquiry-table"
+                        id="payments-table"
+                    >
 
-                    </tr>
+                        <thead>
 
-                </thead>
+                            <tr>
 
+                                <th>SR. NO.</th>
 
-                <tbody>
+                                <th>NAME</th>
 
-                <?php
+                                <th>PHONE</th>
 
-                $sr_no = 1;
+                                <th>EMAIL</th>
 
-                if ($result && mysqli_num_rows($result) > 0) {
+                                <th>ADDRESS</th>
 
-                    while ($row = mysqli_fetch_assoc($result)) {
+                                <th>MESSAGE</th>
 
-                        $id = (int)$row['id'];
+                                <th>INQUIRY DATE</th>
 
-                ?>
+                                <th>ACTION</th>
 
-                    <tr>
+                            </tr>
 
-                        <!-- SERIAL NUMBER -->
+                        </thead>
 
-                        <td class="inquiry-sr">
-                            <?= $sr_no++; ?>
-                        </td>
 
+                        <tbody>
 
-                        <!-- NAME -->
+                        <?php
 
-                        <td class="inquiry-name">
-                            <?= htmlspecialchars($row['name'] ?? '', ENT_QUOTES, 'UTF-8'); ?>
-                        </td>
+                        $sr_no = 1;
 
+                        if ($result && mysqli_num_rows($result) > 0) {
 
-                        <!-- PHONE -->
+                            while ($row = mysqli_fetch_assoc($result)) {
 
-                        <td class="inquiry-phone">
-                            <?= htmlspecialchars($row['phone'] ?? '', ENT_QUOTES, 'UTF-8'); ?>
-                        </td>
+                                $id = (int)$row['id'];
 
-
-                        <!-- EMAIL -->
-
-                        <td>
-                            <?= htmlspecialchars($row['email'] ?? '', ENT_QUOTES, 'UTF-8'); ?>
-                        </td>
-
-
-                        <!-- ADDRESS -->
-
-                        <td>
-                            <?= htmlspecialchars($row['address'] ?? '', ENT_QUOTES, 'UTF-8'); ?>
-                        </td>
-
-
-                        <!-- MESSAGE -->
-
-                        <td class="inquiry-message">
-                            <?= htmlspecialchars($row['message'] ?? '', ENT_QUOTES, 'UTF-8'); ?>
-                        </td>
-
-
-                        <!-- DATE -->
-
-                        <td class="inquiry-date">
-                            <?= htmlspecialchars($row['inq_date'] ?? '', ENT_QUOTES, 'UTF-8'); ?>
-                        </td>
-
-
-                        <!-- ACTION -->
-
-                        <td class="inquiry-action-cell">
-
-                            <button
-                                type="button"
-                                class="action-btn"
-                                onclick="toggleActions(this)"
-                            >
-                                Action
-                            </button>
-
-
-                            <div
-                                class="action-buttons"
-                                style="display:none;"
-                            >
-
-                                <a
-                                    href="update-inquiry.php?id=<?= $id; ?>&type=refollowup"
-                                    class="primary1"
-                                >
-                                    Re-Followup
-                                </a>
-
-
-                                <a
-                                    href="update-inquiry.php?id=<?= $id; ?>&type=visit"
-                                    class="primary2"
-                                >
-                                    Visit
-                                </a>
-
-
-                                <a
-                                    href="update-inquiry.php?id=<?= $id; ?>&type=service"
-                                    class="primary1"
-                                >
-                                    Service
-                                </a>
-
-
-                                <a
-                                    href="update-inquiry.php?id=<?= $id; ?>&type=schedule"
-                                    class="primary2"
-                                >
-                                    Schedule
-                                </a>
-
-
-                                <!-- QUOTATION -->
-
-                                <div class="quotation-dropdown">
-
-                                    <button
-                                        type="button"
-                                        class="quotation-btn"
-                                        onclick="toggleQuotation(this)"
-                                    >
-                                        📄 Send Quotation ▼
-                                    </button>
-
-                                    <div
-                                        class="quotation-menu"
-                                        style="display:none;"
-                                    >
-
-                                        <a
-                                            href="add_quotation.php?inquiry_id=<?= $id; ?>"
-                                            class="add-option"
-                                        >
-                                            Add Quotation
-                                        </a>
-
-                                        <a
-                                            href="fabrication_quotation.php?inquiry_id=<?= $id; ?>"
-                                            class="fabrication-option"
-                                        >
-                                            Fabrication
-                                        </a>
-
-                                    </div>
-
-                                </div>
-
-
-                                <!-- DELETE -->
-
-                                <a
-                                    href="delete-inquiry.php?id=<?= $id; ?>"
-                                    class="primary3"
-                                    onclick="return confirm('Are you sure you want to delete this inquiry?');"
-                                >
-                                    Delete
-                                </a>
-
-
-                                <!-- VIEW QUOTATION -->
-
-                                <?php
+                                // Check quotation
 
                                 $qStmt = mysqli_prepare(
                                     $conn,
-                                    "SELECT id FROM tbl_quotation WHERE inquiry_id = ? LIMIT 1"
+                                    "SELECT id FROM tbl_solar_quotations
+                                     WHERE inquiry_id = ?
+                                     LIMIT 1"
                                 );
 
-                                mysqli_stmt_bind_param($qStmt, "i", $id);
+                                mysqli_stmt_bind_param(
+                                    $qStmt,
+                                    "i",
+                                    $id
+                                );
 
                                 mysqli_stmt_execute($qStmt);
 
                                 $qRes = mysqli_stmt_get_result($qStmt);
 
-                                if ($qRes && mysqli_num_rows($qRes) > 0) {
+                                $quotation = mysqli_fetch_assoc($qRes);
 
-                                    $q = mysqli_fetch_assoc($qRes);
+                        ?>
 
-                                ?>
+                            <tr class="data-row">
 
-                                    <a
-                                        href="generate_quotation.php?id=<?= (int)$q['id']; ?>"
-                                        target="_blank"
-                                        class="primary2"
+                                <td class="inquiry-sr">
+                                    <?= $sr_no++; ?>
+                                </td>
+
+                                <td class="inquiry-name">
+                                    <?= e($row['name']); ?>
+                                </td>
+
+                                <td class="inquiry-phone">
+                                    <?= e($row['phone']); ?>
+                                </td>
+
+                                <td>
+                                    <?= e($row['email']); ?>
+                                </td>
+
+                                <td>
+                                    <?= e($row['address']); ?>
+                                </td>
+
+                                <td class="inquiry-message">
+                                    <?= e($row['message']); ?>
+                                </td>
+
+                                <td class="inquiry-date">
+                                    <?= e($row['inq_date']); ?>
+                                </td>
+
+
+                                <!-- ACTION -->
+
+                                <td class="inquiry-action-cell">
+
+                                    <button
+                                        type="button"
+                                        class="action-btn"
+                                        onclick="toggleActions(this)"
                                     >
-                                        View Quotation
-                                    </a>
+                                        Action
+                                    </button>
 
-                                <?php
 
-                                } else {
+                                    <div
+                                        class="action-buttons"
+                                        style="display:none;"
+                                    >
 
-                                    echo '<span class="quotation-not-added">Quotation Not Added</span>';
 
-                                }
+                                         <button
+                                            type="button"
+                                            class="primary1"
+                                        >
+                                        <a
+                                            href="solar-update-inquiry.php?id=<?= $id; ?>&type=refollowup"
+                                        >
+                                            Re-Followup
+                                        </a>
+                                    </button>
 
-                                ?>
 
-                            </div>
+                                         <button
+                                            type="button"
+                                            class="primary2"
+                                        >
 
-                        </td>
+                                        <a
+                                            href="solar-update-inquiry.php?id=<?= $id; ?>&type=visit"
+                                            
+                                        >
+                                            Visit
+                                        </a>
+                                    </button>
 
-                    </tr>
+                                     <button
+                                            type="button"
+                                            class="primary5"
+                                        >
 
-                <?php
+                                        <a
+                                            href="solar-update-inquiry.php?id=<?= $id; ?>&type=service"
+                                        >
+                                            Service
+                                        </a>
+                                    </button>
 
-                    }
+                                        
+                                         <button
+                                            type="button"
+                                            class="primary4"
+                                        >
+                                        <a
+                                            href="solar-update-inquiry.php?id=<?= $id; ?>&type=schedule"
+                                        >
+                                            Schedule
+                                        </a>
+                                    </button>
 
-                } else {
 
-                ?>
+                                        <!-- SEND QUOTATION -->
 
-                    <tr>
+                                        <a
+                                            href="add_quotation.php?inquiry_id=<?= $id; ?>"
+                                            class="primary6"
+                                        >
+                                            Add Quotation
+                                        </a>
 
-                        <td colspan="8" class="no-inquiry">
-                            No inquiries found.
-                        </td>
 
-                    </tr>
+                                        <!-- FABRICATION -->
 
-                <?php
+                                        <a
+                                            href="fabrication_quotation.php?inquiry_id=<?= $id; ?>"
+                                            class="primary6"
+                                        >
+                                            Fabrication
+                                        </a>
 
-                }
 
-                ?>
+                                        <!-- VIEW QUOTATION -->
 
-                </tbody>
+                                        <?php if ($quotation) { ?>
 
-            </table>
+                                            <a
+                                                href="generate_quotation.php?id=<?= (int)$quotation['id']; ?>"
+                                                target="_blank"
+                                                class="primary2"
+                                            >
+                                                View Quotation
+                                            </a>
+
+                                        <?php } else { ?>
+
+                                            <span class="quotation-not-added">
+                                                Quotation Not Added
+                                            </span>
+
+                                        <?php } ?>
+
+
+                                        <!-- DELETE -->
+
+                                        <a
+                                            href="delete-inquiry.php?id=<?= $id; ?>"
+                                            class="primary3"
+                                            onclick="return confirm('Are you sure you want to delete this inquiry?');"
+                                        >
+                                            Delete
+                                        </a>
+
+                                    </div>
+
+                                </td>
+
+                            </tr>
+
+                        <?php
+
+                            }
+
+                        } else {
+
+                        ?>
+
+                            <tr class="no-data-row">
+
+                                <td colspan="8" class="no-inquiry">
+                                    No Inquiry Found.
+                                </td>
+
+                            </tr>
+
+                        <?php } ?>
+
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
 
         </div>
 
-    </div>
-
-</div>
-
-</section>
+    </section>
 
 </section>
 
 
-<!-- BOTTOM SCROLLBAR -->
-
-<div class="scroll-sync-wrapper">
-
-    <div class="dummy-scrollbar"></div>
-
-</div>
-
-
-<!-- JAVASCRIPT -->
+<!-- =====================================================
+     ACTION MENU JAVASCRIPT
+===================================================== -->
 
 <script>
-
-/* ACTION DROPDOWN */
 
 function toggleActions(button) {
 
@@ -462,27 +481,33 @@ function toggleActions(button) {
 
     });
 
-    container.style.display =
-        container.style.display === 'none' ? 'flex' : 'none';
+    document.querySelectorAll('.action-btn').forEach(function(btn) {
 
-    button.textContent =
-        container.style.display === 'flex' ? 'Actions' : 'Action';
+        if (btn !== button) {
+            btn.textContent = 'Action';
+        }
+
+    });
+
+    if (
+        container.style.display === 'none' ||
+        container.style.display === ''
+    ) {
+
+        container.style.display = 'flex';
+        button.textContent = 'Actions';
+
+    } else {
+
+        container.style.display = 'none';
+        button.textContent = 'Action';
+
+    }
+
 }
 
 
-/* QUOTATION DROPDOWN */
-
-function toggleQuotation(button) {
-
-    const menu = button.nextElementSibling;
-
-    menu.style.display =
-        menu.style.display === 'none' ? 'block' : 'none';
-
-}
-
-
-/* CLOSE ACTION MENU */
+// CLOSE MENU ON OUTSIDE CLICK
 
 document.addEventListener('click', function(event) {
 
@@ -501,7 +526,7 @@ document.addEventListener('click', function(event) {
 });
 
 
-/* ESCAPE KEY */
+// ESC KEY
 
 document.addEventListener('keydown', function(event) {
 
@@ -519,55 +544,24 @@ document.addEventListener('keydown', function(event) {
 
 });
 
-
-/* SYNCHRONIZED SCROLLBAR */
-
-const dummyScroll = document.querySelector('.scroll-sync-wrapper');
-
-const realScroll = document.querySelector('#scrollable-content');
-
-if (dummyScroll && realScroll) {
-
-    const dummyBar = dummyScroll.querySelector('.dummy-scrollbar');
-
-    function updateScrollWidth() {
-        dummyBar.style.width = realScroll.scrollWidth + 'px';
-    }
-
-    updateScrollWidth();
-
-    dummyScroll.addEventListener('scroll', function() {
-        realScroll.scrollLeft = dummyScroll.scrollLeft;
-    });
-
-    realScroll.addEventListener('scroll', function() {
-        dummyScroll.scrollLeft = realScroll.scrollLeft;
-    });
-
-    window.addEventListener('resize', updateScrollWidth);
-
-}
-
 </script>
 
 
-<!-- EXISTING JS -->
+<!-- EXISTING JAVASCRIPT FILES -->
 
 <script src="js/bootstrap.js"></script>
+
 <script src="js/jquery.dcjqaccordion.2.7.js"></script>
+
 <script src="js/scripts.js"></script>
+
 <script src="js/jquery.slimscroll.js"></script>
+
 <script src="js/jquery.nicescroll.js"></script>
+
 <script src="js/jquery.scrollTo.js"></script>
+
 <script src="js/search.js"></script>
 
 </body>
 </html>
-
-<?php
-if (isset($stmt) && $search !== '') {
-    mysqli_stmt_close($stmt);
-}
-
-mysqli_close($conn);
-?>
