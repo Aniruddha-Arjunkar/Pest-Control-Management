@@ -259,6 +259,11 @@ if (
     href="css/shul-dashboard.css"
 >
 
+<link
+    rel="stylesheet"
+    href="css/SolarModule.css"
+>
+
 </head>
 
 <body>

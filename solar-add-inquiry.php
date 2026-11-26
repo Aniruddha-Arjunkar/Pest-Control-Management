@@ -1,4 +1,3 @@
-
 <?php
 session_start();
 
@@ -100,32 +99,23 @@ if (isset($_POST['submit'])) {
                     alert('Solar Inquiry added successfully...');
                     window.location.href='solar-view-inquiry.php';
                 </script>";
-
                 $stmt->close();
                 exit;
-
             } else {
-
                 echo "<script>
                     alert('Inquiry failed: " .
                     addslashes($stmt->error) .
                     "');
                 </script>";
-
             }
-
             $stmt->close();
-
         } else {
-
             echo "<script>
                 alert('Database query failed');
             </script>";
-
         }
     }
 }
-
 include 'header.php';
 ?>
 
@@ -134,36 +124,22 @@ include 'header.php';
      MAIN CONTENT
 ========================================= -->
 
-<section id="main-content">
-
-    <section class="wrapper">
-
-        <div class="reg-w3">
-
+<section id="solar-main-content">
+    <section class="outer-wrapper">
+        <div class="solar-reg-w3">
             <!-- DESIGN CARD -->
-
-            <div class="refollowup-card">
-
+            <div class="solar-form-card">
                 <!-- HEADER -->
-
-                <div class="refollowup-header">
-
-                    <div class="refollowup-title">
-
-                        <span class="phone-icon">☀️</span>
-
+                <div class="form-header">
+                    <div class="form-card-title">
+                        <span class="form-header-icon">☀️</span>
                         <div>
-
                             <h2>Add Solar Inquiry</h2>
-
                             <p>
                                 Add new solar customer inquiry details
                             </p>
-
                         </div>
-
                     </div>
-
                 </div>
 
 
@@ -172,40 +148,30 @@ include 'header.php';
                 <form
                     action="solar-add-inquiry.php"
                     method="POST"
-                    class="refollowup-form"
+                    class="actual-form"
                 >
 
-
                     <!-- CUSTOMER NAME -->
-
-                    <div class="form-group">
+                    <div class="actual-form-group">
 
                         <label>
                             Customer Name <span>*</span>
                         </label>
-
                         <input
                             type="text"
                             name="name"
                             placeholder="Enter Customer Name"
                             required
                         >
-
                     </div>
 
-
                     <!-- PHONE + EMAIL -->
-
-                    <div class="form-row">
-
+                    <div class="actual-form-row">
                         <!-- PHONE -->
-
-                        <div class="form-group">
-
+                        <div class="actual-form-group">
                             <label>
                                 Phone Number <span>*</span>
                             </label>
-
                             <input
                                 type="tel"
                                 name="phone"
@@ -213,127 +179,83 @@ include 'header.php';
                                 placeholder="Enter Phone Number"
                                 required
                             >
-
                         </div>
 
-
                         <!-- EMAIL -->
-
-                        <div class="form-group">
-
+                        <div class="actual-form-group">
                             <label>
                                 Email Address
                             </label>
-
                             <input
                                 type="email"
                                 name="email"
                                 placeholder="Enter Email Address"
                             >
-
                         </div>
-
                     </div>
 
-
                     <!-- INQUIRY DATE -->
-
-                    <div class="form-group">
-
+                    <div class="actual-form-group">
                         <label>
                             Inquiry Date <span>*</span>
                         </label>
-
                         <input
                             type="date"
                             name="inq_date"
                             value="<?= date('Y-m-d') ?>"
                             required
                         >
-
                     </div>
 
-
                     <!-- ADDRESS -->
-
-                    <div class="form-group">
-
+                    <div class="actual-form-group">
                         <label>
                             Address
                         </label>
-
                         <input
                             type="text"
                             name="address"
                             placeholder="Enter Customer Address"
                         >
-
                     </div>
 
-
                     <!-- MESSAGE -->
-
-                    <div class="form-group">
-
+                    <div class="actual-form-group">
                         <label>
                             Solar Requirement / Message
                         </label>
-
                         <textarea
                             name="message"
                             placeholder="Enter Solar Inquiry Details"
                             rows="4"
                         ></textarea>
-
                     </div>
 
-
                     <!-- SUBMIT BUTTON -->
-
                     <button
                         name="submit"
                         type="submit"
-                        class="submit-btn"
+                        class="from-submit-btn"
                         value="Submit"
                     >
-
                         <span>☀️</span>
-
                         Submit Inquiry
-
                     </button>
-
                 </form>
-
             </div>
-
         </div>
-
     </section>
-
 </section>
 
-
-<!-- =========================================
-     JAVASCRIPT
-========================================= -->
-
+<!-- ================== JAVASCRIPT ===================== -->
 <script src="js/bootstrap.js"></script>
-
 <script src="js/jquery.dcjqaccordion.2.7.js"></script>
-
 <script src="js/scripts.js"></script>
-
 <script src="js/jquery.slimscroll.js"></script>
-
 <script src="js/jquery.nicescroll.js"></script>
-
 <script src="js/jquery.scrollTo.js"></script>
-
 </body>
 </html>
-
-
 <?php
 mysqli_close($conn);
 ?>
