@@ -1627,7 +1627,7 @@ input {
     .shul-sidebar-toggle {
 
         right: 8px !important;
-
+        
         width: 32px !important;
         height: 36px !important;
 
@@ -1983,25 +1983,18 @@ input {
 .inquiry-search {
     width: 300px;
     height: 40px;
-
     border: 1px solid #dfe5ef;
     border-radius: 9px;
-
     padding: 0 14px;
-
     font-size: 14px;
     color: #344054;
-
     outline: none;
-
     margin-bottom: 18px;
 }
 
 .inquiry-search:focus {
     border-color: #8da9ff;
-
-    box-shadow:
-        0 0 0 3px rgba(79,70,229,.08);
+    box-shadow:0 0 0 3px rgba(79,70,229,.08);
 }
 
 
@@ -2010,7 +2003,6 @@ input {
 .inquiry-table-wrapper {
     width: 100%;
     overflow-x: auto;
-
     border: 1px solid #dce4f0;
     border-radius: 11px;
 }
@@ -2018,10 +2010,8 @@ input {
 .inquiry-table {
     width: 100%;
     min-width:  950px;
-
     border-collapse: separate;
     border-spacing: 0;
-
     font-size: 12px;
 }
 
@@ -2078,8 +2068,6 @@ input {
     border-right: 0;
 }
 
-
-/* NAME */
 
 /* NAME */
 
@@ -2171,7 +2159,7 @@ input {
 
 .action-buttons button {
     width: 100%;
-
+    
     border: 0;
 
     padding: 8px 7px;

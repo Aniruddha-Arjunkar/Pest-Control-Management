@@ -146,22 +146,22 @@ function e($value) {
      MAIN CONTENT
 ===================================================== -->
 
-<section id="main-content">
+<section id="solar-main-content">
 
-    <section class="wrapper">
+    <section class="outer-wrapper">
 
-        <div class="inquiry-page">
+        <div class="solar-view-table-page">
 
             <!-- PAGE HEADER -->
 
-            <div class="inquiry-page-header">
+            <div class="solar-table-header">
 
                 <h1>📋 View Inquiries</h1>
 
                 <p>
                     Showing all new inquiry records
 
-                    <span class="inquiry-count">
+                    <span class="record-count">
                         <?= $total_records; ?> Records
                     </span>
                 </p>
@@ -171,24 +171,24 @@ function e($value) {
 
             <!-- MAIN CARD -->
 
-            <div class="inquiry-card">
+            <div class="solar-table-card">
 
                 <!-- TOP AREA -->
 
-                <div class="followup-top-area">
+                <div class="solar-table-top-section">
 
                     <!-- SEARCH -->
 
-                   <div class="inquiry-search-wrapper">
+                   <div class="table-search-wrapper">
 
-                        <span class="inquiry-search-icon">
+                        <span class="table-search-icon">
                             🔍
                         </span>
 
                         <input
                             type="text"
                             id="txt_searchall"
-                            class="inquiry-search"
+                            class="table-record-search"
                             placeholder="Search by name, phone or email..."
                             value="<?= htmlspecialchars($search, ENT_QUOTES, 'UTF-8'); ?>"
                             autocomplete="off"
@@ -203,12 +203,12 @@ function e($value) {
                 <!-- TABLE -->
 
                 <div
-                    class="inquiry-table-wrapper"
+                    class="actual-table-wrapper"
                     id="scrollable-content"
                 >
 
                     <table
-                        class="inquiry-table"
+                        class="solar-actual-table"
                         id="payments-table"
                     >
 
@@ -274,15 +274,15 @@ function e($value) {
 
                             <tr class="data-row">
 
-                                <td class="inquiry-sr">
+                                <td class="table-sr-column">
                                     <?= $sr_no++; ?>
                                 </td>
 
-                                <td class="inquiry-name">
+                                <td class="table-name-column">
                                     <?= e($row['name']); ?>
                                 </td>
 
-                                <td class="inquiry-phone">
+                                <td class="table-phone-column">
                                     <?= e($row['phone']); ?>
                                 </td>
 
@@ -294,33 +294,31 @@ function e($value) {
                                     <?= e($row['address']); ?>
                                 </td>
 
-                                <td class="inquiry-message">
+                                <td class="table-message-column">
                                     <?= e($row['message']); ?>
                                 </td>
 
-                                <td class="inquiry-date">
+                                <td class="table-date-column">
                                     <?= e($row['inq_date']); ?>
                                 </td>
 
 
                                 <!-- ACTION -->
 
-                                <td class="inquiry-action-cell">
+                                <td class="table-action-cell">
 
                                     <button
                                         type="button"
-                                        class="action-btn"
+                                        class="record-action-btn"
                                         onclick="toggleActions(this)"
                                     >
                                         Action
                                     </button>
 
-
                                     <div
-                                        class="action-buttons"
+                                        class="action-sub-buttons"
                                         style="display:none;"
                                     >
-
 
                                          <button
                                             type="button"
