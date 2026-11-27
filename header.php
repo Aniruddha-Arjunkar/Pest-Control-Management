@@ -1557,7 +1557,8 @@ class="shul-sidebar-scroll"
     hasAccess('solar_management','trader_add') ||
     hasAccess('solar_management','trader_view')||
     hasAccess('solar_management','payment_due') ||
-    hasAccess('solar_management','payment_view')
+    hasAccess('solar_management','payment_view')||
+    hasAccess('solar_management','quotation_view')
 ): ?>
 
 <li class="sub-menu">
@@ -1643,6 +1644,14 @@ class="shul-sidebar-scroll"
     <li>
         <a href="solar-view-schedule.php">
             View Schedule
+        </a>
+    </li>
+<?php endif; ?>
+
+<?php if (hasAccess('solar_management','quotation_view')): ?>
+    <li>
+        <a href="solar-view-quotations.php">
+            View Qautations
         </a>
     </li>
 <?php endif; ?>

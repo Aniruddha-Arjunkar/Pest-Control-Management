@@ -1,4 +1,3 @@
-
 <?php
 ob_start();
 session_start();
@@ -26,7 +25,6 @@ function e($value) {
    GET CLIENT ID
 ========================= */
 $client_id = (int)($_GET['client_id'] ?? $_GET['id'] ?? 0);
-
 if ($client_id <= 0) {
     die("Invalid Solar Client ID");
 }
