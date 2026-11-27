@@ -2,7 +2,74 @@
     padding: 40px;
 }
 
-/* ======= Form Page ================== */
+/* ============================================================================================== */
+/* =================================== SIDEBAR CSS ============================================== */
+/* ============================================================================================== */
+
+/* .sidebar-menu ul.solar-sub {
+    background:#1b4332 !important;
+    
+}
+
+.solar-subs-sub{
+    background:#48b332 !important;
+} */
+
+/* Main Solar Submenu */
+.sidebar-menu ul.solar-sub {
+    background: #164B3C !important;
+    /* background: #064E3B !important; */
+    border-radius: 9px;
+    padding: 5px;
+    margin-top: 5px;
+}
+
+
+/* Nested Solar Submenus */
+.sidebar-menu ul.solar-subs-sub {
+    background: #1E5B49 !important;
+    /* background: #047857 !important; */
+    border-radius: 8px;
+    padding: 5px;
+    margin: 4px 0 6px 8px;
+}
+
+
+/* Solar Menu Links */
+.sidebar-menu ul.solar-sub li a,
+.sidebar-menu ul.solar-subs-sub li a {
+    color: #EAF5EF !important;
+    /* color: #EAF5EF !important; */
+    transition: all 0.25s ease;
+    border-radius: 6px;
+}
+
+
+/* Hover Effect */
+.sidebar-menu ul.solar-sub li a:hover,
+.sidebar-menu ul.solar-subs-sub li a:hover {
+    background: #287A5B !important;
+    /* background: #059669 !important; */
+    color: #FFFFFF !important;
+    padding-left: 18px;
+
+}
+
+
+/* Active Menu Item */
+.sidebar-menu ul.solar-sub li.active > a,
+.sidebar-menu ul.solar-subs-sub li.active > a {
+    background: #2E9B68 !important;
+    /* background: #10B981 !important; */
+    color: #FFFFFF !important;
+    font-weight: 600;
+
+}
+
+/* ============================================================================================== */
+/* ====================================== FORM PAGE CSS ========================================= */
+/* ============================================================================================== */
+
 #solar-main-content .outer-wrapper {
     background: linear-gradient(
         135deg,
@@ -22,7 +89,7 @@
     align-items: flex-start;
     padding: 30px 20px 40px;
     box-sizing: border-box;
-    
+
 }
 
 /* .refollowup-card { */
@@ -262,5 +329,295 @@
 .from-submit-btn:active {
     transform: translateY(0);
     box-shadow: 0 2px 6px rgba(22, 163, 74, 0.2);
+}
+
+
+/* ============================================================================================= */
+/* ============================== VIEW PAGE CSS ================================================ */
+/* ============================================================================================= */
+
+/* .inquiry-page { */
+.solar-view-table-page{
+    padding: 20px;
+    max-width: 1280px;
+    margin: 17px;
+    border-radius: 14px;
+    background: linear-gradient(
+        135deg,
+        #e5f2e7 0%,
+        #dff0e3 50%,
+        #e7f4eb 100%
+    );
+}
+
+/* .inquiry-page-header { */
+.solar-table-header {
+    margin-bottom: 20px;
+}
+
+/* .inquiry-page-header h1 { */
+.solar-table-header h1{
+    margin: 0;
+    font-size: 28px;
+    font-weight: 700;
+    color: #162d4f;
+}
+
+/* .inquiry-page-header p { */
+.solar-table-header p{
+    margin: 6px 0 0;
+    font-size: 14px;
+    color: #7b8799;
+}
+
+/* .inquiry-count { */
+.record-count {
+    display: inline-block;
+    margin-left: 8px;
+    padding: 5px 10px;
+    background: #eeffee;
+    color: #1bce27;
+    border-radius: 20px;
+    font-size: 10px;
+    font-weight: 700;
+}
+
+/*========================== Table CARD ========================= */
+
+/* .inquiry-card { */
+.solar-table-card {
+    background: #fff;
+    border-radius: 14px;
+    padding: 20px;
+    box-shadow: 0 7px 24px rgba(15, 42, 25, 0.055);
+}
+
+/* .followup-top-area { */
+.solar-table-top-section {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    margin-bottom: 18px;
+    flex-wrap: wrap;
+}
+
+/* .inquiry-search-wrapper{ */
+.table-search-wrapper {
+
+}
+
+/* .inquiry-search-icon { */
+.table-search-icon {
+
+}
+
+/* .inquiry-search { */
+.table-record-search {
+    width: 300px;
+    height: 40px;
+    border: 1px solid #dfefe2;
+    border-radius: 9px;
+    padding: 0 14px;
+    font-size: 14px;
+    color: #344054;
+    outline: none;
+    margin-bottom: 18px;
+}
+
+/* .inquiry-search:focus { */
+.table-record-search:focus {
+    border-color: #62f685;
+    box-shadow:0 0 0 3px rgba(102, 229, 70, 0.08);
+}
+
+
+/* ============== ACTUAL TABLE ======================== */
+
+/* .inquiry-table-wrapper { */
+.actual-table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    border: 1px solid #dcf0dc;
+    border-radius: 11px;
+}
+
+/* .inquiry-table { */
+.solar-actual-table {
+    width: 100%;
+    min-width:  950px;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 12px;
+}
+
+#payments-table {
+    overflow: visible;
+}
+
+.solar-actual-table thead th {
+    background: #15803d;
+    /* background: linear-gradient(
+        120deg,
+        #15803d 0%,
+        #16a34a 80%
+        ); */
+    color: #fff;
+   padding: 10px 8px;
+    text-align: left;
+    font-size: 14px;
+    font-weight: 800;
+    border-right: 1px solid rgba(255,255,255,.3);
+   text-align: center;
+}
+
+.solar-actual-table thead th:first-child {
+    border-radius: 10px 0 0 0;
+}
+
+.solar-actual-table thead th:last-child {
+    border-radius: 0 10px 0 0;
+    border-right: 0;
+}
+
+
+.solar-actual-table tbody td {
+     padding: 10px 8px;
+    border-right: 1px solid #d7e0ec;
+    border-bottom: 1px solid #d7e0ec;
+    color: #283240;
+    vertical-align: middle;
+    background: #fff;
+    font-size: 14px;
+    text-align: center;
+}
+
+.solar-actual-table tbody tr:nth-child(even) td {
+    background: #f2fff3;
+}
+
+.solar-actual-table tbody tr:hover td {
+    background: #e5fbe5;
+}
+
+.solar-actual-table tbody td:last-child {
+    border-right: 0;
+}
+
+.table-name-column {
+    white-space: normal;
+    color: #253858;
+    font-weight: 700;
+}
+
+.table-message-column {
+    min-width: 0;
+    max-width: none;
+    white-space: normal;
+    word-break: break-word;
+    line-height: 1.55;
+}
+
+.table-date-column {
+    font-weight: 600;
+    color: #475569;
+    white-space: nowrap;
+}
+
+/* .inquiry-action-cell { */
+.table-action-cell {
+    width: 120px;
+    text-align: center;
+    position: relative;
+}
+
+
+/* .action-btn { */
+.record-action-btn {
+    border: 0;
+    /* background: #6366f1 !important; */
+    background: linear-gradient(
+        110deg,
+        #15803d,
+        #16a34a,
+        #22c55e
+    ) !important;
+    color: #fff !important;
+    padding: 8px 15px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(99,102,241,.2);
+}
+
+/* .action-btn:hover { */
+.record-action-btn :hover {
+    background: #4f46e5 !important;
+}
+
+/* .action-buttons { */
+.action-sub-buttons {
+   position: absolute;
+  top:calc(50% + 25px);
+  right: 0;
+  z-index: 500;
+  min-width: 170px;
+  background: #fff;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 15px 40px rgba(15, 23, 42, 0.15);
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+/* .action-buttons button { */
+.action-sub-buttons button {
+    width: 100%;
+    border: 0;
+    padding: 8px 7px;
+    border-radius: 6px;
+    font-size: 10px;
+    cursor: pointer;
+}
+
+/* .action-buttons a { */
+.action-sub-buttons a {
+    color: inherit !important;
+    text-decoration: none !important;
+    display: block;
+    font-size: 14px;
+}
+
+button.primary1 {
+    background: #d1fae5;
+    color: #047857;
+}
+
+button.primary2 {
+    background: #fef3c7;
+    color: #b45309;
+}
+
+button.primary3 {
+    background: #fee2e2;
+    color: #dc2626;
+}
+
+button.primary4 {
+    background: #fecaca;
+    color: #b91c1c;
+}
+
+button.primary5 {
+    background: #e9d5ff;
+    color: #7e22ce;
+}
+
+button.primary6 {
+    background: #dbeafe;
+    color: #1d4ed8;
 }
 

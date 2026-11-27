@@ -540,7 +540,7 @@ class="shul-sidebar-scroll"
     <a href="chat.php">
 
         💬
-
+        
         <span>
             Chat
         </span>
@@ -1573,7 +1573,7 @@ class="shul-sidebar-scroll"
 
     </a>
 
-    <ul class="sub">
+    <ul class="sub solar-sub">
 
         <!-- INQUIRY -->
 
@@ -1589,7 +1589,7 @@ class="shul-sidebar-scroll"
                 <span>Inquiry</span>
             </a>
 
-            <ul class="sub">
+            <ul class="sub solar-subs-sub">
 
                 <?php if (hasAccess('solar_management','inquiry_add')): ?>
                     <li>
@@ -1680,7 +1680,7 @@ class="shul-sidebar-scroll"
         <span>Vendor</span>
     </a>
 
-    <ul class="sub">
+    <ul class="sub solar-subs-sub">
 
         <?php if (hasAccess('solar_management','vendor_add')): ?>
             <li>
@@ -1719,7 +1719,7 @@ class="shul-sidebar-scroll"
         <span>Trader</span>
     </a>
 
-    <ul class="sub">
+    <ul class="sub solar-subs-sub">
 
         <?php if (hasAccess('solar_management','trader_add')): ?>
             <li>
@@ -1758,7 +1758,7 @@ class="shul-sidebar-scroll"
         <span>Clients</span>
     </a>
 
-    <ul class="sub">
+    <ul class="sub solar-subs-sub">
 
         <?php if (hasAccess('solar_management','client_view')): ?>
             <li>
@@ -1812,7 +1812,7 @@ class="shul-sidebar-scroll"
 
     </a>
 
-    <ul class="sub">
+    <ul class="sub solar-subs-sub">
 
         <!-- DUE PAYMENTS -->
 
