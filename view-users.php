@@ -19,149 +19,150 @@ if (isset($_GET['logout'])) {
 
 <body>
     <!-- Main content start -->
-  <section id="main-content" class="users-page">
-    <div class="users-page-header">
+    <section id="main-content" class="users-page">
+        <div class="users-page-header">
 
-    <div class="users-title-area">
+            <div class="users-title-area">
 
-        <div class="users-title">
-            <span class="users-title-icon">👤</span>
-            <span>View Users</span>
-        </div>
+                <div class="users-title">
+                    <span class="users-title-icon">👤</span>
+                    <span>View Users</span>
+                </div>
 
-        <div class="users-subtitle">
-            Manage system users
-            <span class="users-count">6 Users</span>
-        </div>
+                <div class="users-subtitle">
+                    Manage system users
+                    <span class="users-count">6 Users</span>
+                </div>
+
+            </div>
+
+            <button type="button"
+            class="users-create-btn"
+            onclick="openCreateUserModal()">
+            ＋ Create User
+        </button>
 
     </div>
-
-<button type="button"
-        class="users-create-btn"
-        onclick="openCreateUserModal()">
-    ＋ Create User
-</button>
-
-</div>
-        <section class="wrapper">
+    <section class="wrapper">
         <div class="table-agile-info">
-                <div class="panel panel-default">
-                    <!-- Button to trigger modal -->
-                  
+            <div class="panel panel-default">
+                <!-- Button to trigger modal -->
 
 
-                    <?php if (isset($_SESSION['msg'])): ?>
-                        <div class="alert alert-info"><?= $_SESSION['msg']; unset($_SESSION['msg']); ?></div>
-                    <?php endif; ?>
 
-                  <div class="refollowup-search-wrap">
-    <span class="refollowup-search-icon">🔍</span>
-    <input type="text" id="txt_searchall" class="refollowup-input" placeholder="Search Users">
-</div>
-                    
-                  <div class="refollowup-table-wrapper" id="scrollable-content">
-                       <table class="refollowup-table">
-                            <thead>
-                                <tr>
-                                    <th>Sr.No.</th>
-                                    <th>Name</th>
-                                    <th>Phone</th>
-                                    <th>Email</th>
-                                    <th>Password</th> <!-- Displaying Password -->
-                                    <th>Role</th>
-                                    <th>Branch</th>
-                                    <th>Access Module</th>
-                                    <th>Action</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php
+                <?php if (isset($_SESSION['msg'])): ?>
+                    <div class="alert alert-info"><?= $_SESSION['msg']; unset($_SESSION['msg']); ?></div>
+                <?php endif; ?>
+
+                <div class="refollowup-search-wrap">
+                    <span class="refollowup-search-icon">🔍</span>
+                    <input type="text" id="txt_searchall" class="refollowup-input" placeholder="Search Users">
+                </div>
+
+                <div class="refollowup-table-wrapper" id="scrollable-content">
+                 <table class="refollowup-table">
+                    <thead>
+                        <tr>
+                            <th>Sr.No.</th>
+                            <th>Name</th>
+                            <th>Phone</th>
+                            <th>Email</th>
+                            <th>Password</th> <!-- Displaying Password -->
+                            <th>Role</th>
+                            <th>Branch</th>
+                            <th>Access Module</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php
                                 // Using prepared statement for better security
-                                $stmt = $conn->prepare("SELECT * FROM users ORDER BY Id ASC");
-                                $stmt->execute();
-                                $result = $stmt->get_result();
-                                $i=1;
-                                if ($result->num_rows > 0) {
-                                    while ($row = $result->fetch_assoc()) {
-                                        ?>
-                                        <tr>
-                                            <td><?= $i++; ?></td> 
-                                            <td><?= htmlspecialchars($row["name"]?? ''); ?></td>
-                                            <td><?= htmlspecialchars($row["phone"]?? ''); ?></td>
-                                            <td><?= htmlspecialchars($row["email"]?? ''); ?></td>
-                                            <td><?= htmlspecialchars($row["password"]?? ''); ?></td> <!-- Displaying Password -->
-                                            <td><?= htmlspecialchars($row["role"]?? ''); ?></td>
-                                            <td><?= htmlspecialchars($row["branch"]?? ''); ?></td>
-                                            <td><?= htmlspecialchars($row["access_modules"]?? ''); ?></td>
-                                            <td>
-                                                <a href="edit.php?id=<?= $row['Id']; ?>" class="btn btn-primary">Edit</a>
-                                                <a href="delete-user.php?id=<?= $row['Id']; ?>" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this user?');">Delete</a>
-                                            </td>
-                                        </tr>
-                                        <?php
-                                    }
-                                } else {
-                                  echo "<tr><td colspan='9' class='users-no-result'>No results found.</td></tr>";
-                                }
-                                $stmt->close();
+                        $stmt = $conn->prepare("SELECT * FROM users ORDER BY Id ASC");
+                        $stmt->execute();
+                        $result = $stmt->get_result();
+                        $i=1;
+                        if ($result->num_rows > 0) {
+                            while ($row = $result->fetch_assoc()) {
                                 ?>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </section>
-    </section>
+                                <tr>
+                                    <td><?= $i++; ?></td> 
+                                    <td><?= htmlspecialchars($row["name"]?? ''); ?></td>
+                                    <td><?= htmlspecialchars($row["phone"]?? ''); ?></td>
+                                    <td><?= htmlspecialchars($row["email"]?? ''); ?></td>
+                                    <td><?= htmlspecialchars($row["password"]?? ''); ?></td> <!-- Displaying Password -->
+                                    <td><?= htmlspecialchars($row["role"]?? ''); ?></td>
+                                    <td><?= htmlspecialchars($row["branch"]?? ''); ?></td>
+                                    <td><?= htmlspecialchars($row["access_modules"]?? ''); ?></td>
+                                    <td>
+                                        <a href="edit.php?id=<?= $row['Id']; ?>" class="btn btn-primary">Edit</a>
+                                        <a href="delete-user.php?id=<?= $row['Id']; ?>" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this user?');">Delete</a>
+                                    </td>
+                                </tr>
+                                <?php
+                            }
+                        } else {
+                          echo "<tr><td colspan='9' class='users-no-result'>No results found.</td></tr>";
+                      }
+                      $stmt->close();
+                      ?>
+                  </tbody>
+              </table>
+          </div>
+      </div>
+  </div>
+</section>
+</section>
 
-    <!-- Create New User Modal -->
-   <div id="createUserModal" class="create-user-modal">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="createUserModalLabel">Create New User</h5>
-                   <button type="button" class="close" onclick="closeCreateUserModal()" aria-label="Close">
-    <span aria-hidden="true">&times;</span>
-</button>
-                </div>
-                <div class="modal-body">
-                    <form id="createUserForm" action="create-user.php" method="POST">
-                        <div class="form-group">
-                            <label for="name">Name</label>
-                            <input type="text" class="form-control" id="name" name="name" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="phone">Phone</label>
-                            <input type="text" class="form-control" id="phone" name="phone" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="email">Email</label>
-                            <input type="email" class="form-control" id="email" name="email" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="password">Password</label>
-                            <input type="password" class="form-control" id="password" name="password" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="role">Role</label>
-                            <select class="form-control" id="role" name="role" required>
-                                <option value="Select User">Select User</option>
-                                <option value="super_admin">super_admin</option>
-                                <option value="branch_admin">branch_admin</option>
-                                <option value="support_team">support_team</option>
-                                <option value="operator">operator</option>
-                                <option value="marketing">Marketing</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="branch">Branch</label>
-                            <select class="form-control" id="branch" name="branch" placeholder="Branch">
-                                <option value="">Select Branch</option>
-                                <option value="Nagpur">Nagpur</option>
-                                <option value="Bramhapuri">Bramhapuri</option>
-                                <option value="Chandrapur">Chandrapur</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
+<!-- Create New User Modal -->
+<div id="createUserModal" class="create-user-modal">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="createUserModalLabel">Create New User</h5>
+                <button type="button" class="close" onclick="closeCreateUserModal()" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="createUserForm" action="create-user.php" method="POST">
+                    <div class="form-group">
+                        <label for="name">Name</label>
+                        <input type="text" class="form-control" id="name" name="name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="phone">Phone</label>
+                        <input type="text" class="form-control" id="phone" name="phone" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="email" class="form-control" id="email" name="email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input type="password" class="form-control" id="password" name="password" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="role">Role</label>
+                        <select class="form-control" id="role" name="role" required>
+                            <option value="Select User">Select User</option>
+                            <option value="super_admin">super_admin</option>
+                            <option value="branch_admin">branch_admin</option>
+                            <option value="support_team">support_team</option>
+                            <option value="operator">operator</option>
+                            <option value="marketing">Marketing</option>
+                            <option value="solar_operator">Solar Operator</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="branch">Branch</label>
+                        <select class="form-control" id="branch" name="branch" placeholder="Branch">
+                            <option value="">Select Branch</option>
+                            <option value="Nagpur">Nagpur</option>
+                            <option value="Bramhapuri">Bramhapuri</option>
+                            <option value="Chandrapur">Chandrapur</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
                         <label><b>Module Access:</b></label><br>
 
                         <!-- INQUIRY -->
@@ -225,19 +226,19 @@ if (isset($_GET['logout'])) {
                                 <label style="margin-left:20px;"><input type="checkbox" name="modules[]" value="employee_management','add'"> Add Employee</label><br>
                                 <label style="margin-left:20px;"><input type="checkbox" name="modules[]" value="employee_management','add'"> View Employee</label><br>
                                 <label style="margin-left:20px;"><input type="checkbox" name="modules[]" value="employee_management','add_salary'"> Add Salary</label><br>
-                                </div>
-                                </div>
-                                
+                            </div>
+                        </div>
+
                         
-                         <div class="accordion-item">
+                        <div class="accordion-item">
                             <!-- CLIENTS -->
                             <label onclick="toggleModule('inventoryBox', this)" style="cursor:pointer;">
                                 ▶ Inventory Modules
                             </label>
 
                             <div id="inventoryBox" style="display:none; border:1px solid #ccc; padding:10px; margin-bottom:10px;">
-                        <label><input type="checkbox" name="modules[]" value="all_inventory">All Inventory</label><br>
-                            <label style="margin-left:20px;"><input type="checkbox" name="modules[]" value="purchese_view"> View Purchese</label>
+                                <label><input type="checkbox" name="modules[]" value="all_inventory">All Inventory</label><br>
+                                <label style="margin-left:20px;"><input type="checkbox" name="modules[]" value="purchese_view"> View Purchese</label>
                             </div>
                         </div>
 
@@ -250,36 +251,145 @@ if (isset($_GET['logout'])) {
 
                             <div id="attendanceBox" style="display:none; border:1px solid #ccc; padding:10px;">
                                 <label><input type="checkbox" name="modules[]" value="attendance">Attendance</label><br>
-                                </div>
-                                </div>
-                               
-                                
-                               
-                        
-                        
-              <!--          <div class="form-group">-->
-              <!--           <label>Module Access:</label><br>-->
-              <!--    <input type="checkbox" name="modules[]" value="inquiry"> Inquiry<br>-->
-              <!--    <input type="checkbox" name="modules[]" value="clients"> Clients<br>-->
-              <!--    <input type="checkbox" name="modules[]" value="accounts"> Accounts<br>-->
-              <!--    <input type="checkbox" name="modules[]" value="pending_service"> Pending Service<br>-->
-              <!--    <input type="checkbox" name="modules[]" value="due_payments"> Due Payments<br>-->
-              <!--    <input type="checkbox" name="modules[]" value="complaints"> Complaints<br>-->
-              <!--    <input type="checkbox" name="modules[]" value="employee_management"> Employee Management<br>-->
-              <!--    <input type="checkbox" name="modules[]" value="attendance"> Attendance<br>-->
-              <!--    <input type="checkbox" name="modules[]" value="consultancy"> Consultancy<br>-->
-              <!--    <input type="checkbox" name="modules[]" value="internship"> Internship<br>-->
-              <!--    <input type="checkbox" name="modules[]" value="all_inventory"> All Inventory<br>-->
-              <!--    <input type="checkbox" name="modules[]" value="inventory"> Inventory<br>-->
-              <!--    <input type="checkbox" name="modules[]" value="logout"> Logout<br>-->
-              </div>
-                        <button type="submit" class="btn btn-primary">Create User</button>
-                    </form>
-                </div>
-            </div>
-        </div>
+                            </div>
+                        </div>
+
+
+
+<!-- =====================================================
+     SOLAR MANAGEMENT
+===================================================== -->
+
+<div class="accordion-item">
+
+    <label onclick="toggleModule('solarBox', this)" style="cursor:pointer;">
+        ▶ Solar Management
+    </label>
+
+    <div id="solarBox" style="display:none; border:1px solid #ccc; padding:10px; margin-bottom:10px;">
+
+        <label>
+            <input type="checkbox" name="modules[]" value="solar_management">
+            All Solar Management
+        </label>
+        <br>
+
+        <label style="margin-left:20px;">
+            <input type="checkbox" name="modules[]" value="solar_management:inquiry_add">
+            Add Inquiry
+        </label><br>
+
+        <label style="margin-left:20px;">
+            <input type="checkbox" name="modules[]" value="solar_management:inquiry_view">
+            View Inquiry
+        </label><br>
+
+        <label style="margin-left:20px;">
+            <input type="checkbox" name="modules[]" value="solar_management:inquiry_refollowup">
+            View Re-followup
+        </label><br>
+
+        <label style="margin-left:20px;">
+            <input type="checkbox" name="modules[]" value="solar_management:inquiry_visit">
+            View Visit
+        </label><br>
+
+        <label style="margin-left:20px;">
+            <input type="checkbox" name="modules[]" value="solar_management:inquiry_service">
+            View Future Services
+        </label><br>
+
+        <label style="margin-left:20px;">
+            <input type="checkbox" name="modules[]" value="solar_management:inquiry_schedule">
+            View Schedule
+        </label><br>
+
+        <label style="margin-left:20px;">
+            <input type="checkbox" name="modules[]" value="solar_management:quotation_view">
+            View Quotations
+        </label><br>
+
+        <label style="margin-left:20px;">
+            <input type="checkbox" name="modules[]" value="solar_management:client_add">
+            Add Client
+        </label><br>
+
+        <label style="margin-left:20px;">
+            <input type="checkbox" name="modules[]" value="solar_management:client_view">
+            View Clients
+        </label><br>
+
+        <label style="margin-left:20px;">
+            <input type="checkbox" name="modules[]" value="solar_management:client_view_gst">
+            GST Clients
+        </label><br>
+
+        <label style="margin-left:20px;">
+            <input type="checkbox" name="modules[]" value="solar_management:pending_clients">
+            View Pending Clients
+        </label><br>
+
+        <label style="margin-left:20px;">
+            <input type="checkbox" name="modules[]" value="solar_management:vendor_add">
+            Add Vendor
+        </label><br>
+
+        <label style="margin-left:20px;">
+            <input type="checkbox" name="modules[]" value="solar_management:vendor_view">
+            View Vendor
+        </label><br>
+
+        <label style="margin-left:20px;">
+            <input type="checkbox" name="modules[]" value="solar_management:trader_add">
+            Add Trader
+        </label><br>
+
+        <label style="margin-left:20px;">
+            <input type="checkbox" name="modules[]" value="solar_management:trader_view">
+            View Trader
+        </label><br>
+
+        <label style="margin-left:20px;">
+            <input type="checkbox" name="modules[]" value="solar_management:payment_due">
+            Due Payments
+        </label><br>
+
+        <label style="margin-left:20px;">
+            <input type="checkbox" name="modules[]" value="solar_management:payment_view">
+            View Payments
+        </label>
+
     </div>
-    <style>
+</div>
+
+
+
+
+
+
+<!--          <div class="form-group">-->
+  <!--           <label>Module Access:</label><br>-->
+  <!--    <input type="checkbox" name="modules[]" value="inquiry"> Inquiry<br>-->
+  <!--    <input type="checkbox" name="modules[]" value="clients"> Clients<br>-->
+  <!--    <input type="checkbox" name="modules[]" value="accounts"> Accounts<br>-->
+  <!--    <input type="checkbox" name="modules[]" value="pending_service"> Pending Service<br>-->
+  <!--    <input type="checkbox" name="modules[]" value="due_payments"> Due Payments<br>-->
+  <!--    <input type="checkbox" name="modules[]" value="complaints"> Complaints<br>-->
+  <!--    <input type="checkbox" name="modules[]" value="employee_management"> Employee Management<br>-->
+  <!--    <input type="checkbox" name="modules[]" value="attendance"> Attendance<br>-->
+  <!--    <input type="checkbox" name="modules[]" value="consultancy"> Consultancy<br>-->
+  <!--    <input type="checkbox" name="modules[]" value="internship"> Internship<br>-->
+  <!--    <input type="checkbox" name="modules[]" value="all_inventory"> All Inventory<br>-->
+  <!--    <input type="checkbox" name="modules[]" value="inventory"> Inventory<br>-->
+  <!--    <input type="checkbox" name="modules[]" value="logout"> Logout<br>-->
+</div>
+<button type="submit" class="btn btn-primary">Create User</button>
+</form>
+</div>
+</div>
+</div>
+</div>
+<style>
 
 /* =========================================================
    ACCORDION ITEM
@@ -320,7 +430,7 @@ if (isset($_GET['logout'])) {
     display: flex;
     align-items: center;
     justify-content: space-between;
-margin-top: 25px;
+    margin-top: 25px;
     margin-bottom: 25px;
 }
 
@@ -328,7 +438,7 @@ margin-top: 25px;
     display: flex;
     flex-direction: column;
     margin-top: 25px;
-   
+
 }
 /* =========================================================
    USERS TITLE - FORCE SIZE
@@ -424,11 +534,11 @@ margin-top: 25px;
     white-space: nowrap;
 
     box-shadow:
-        0 4px 10px rgba(18,168,74,.16);
+    0 4px 10px rgba(18,168,74,.16);
 
     transition:
-        background 0.2s ease,
-        transform 0.1s ease;
+    background 0.2s ease,
+    transform 0.1s ease;
 }
 
 .users-create-btn:hover {
@@ -453,7 +563,7 @@ margin-top: 25px;
     padding: 22px;
 
     box-shadow:
-        0 4px 15px rgba(15,23,42,.10);
+    0 4px 15px rgba(15,23,42,.10);
 }
 
 
@@ -507,7 +617,7 @@ margin-top: 25px;
     border-color: #8da9ff;
 
     box-shadow:
-        0 0 0 3px rgba(79,70,229,.08);
+    0 0 0 3px rgba(79,70,229,.08);
 }
 
 
@@ -528,8 +638,8 @@ margin-top: 25px;
     scrollbar-width: thin;
 
     scrollbar-color:
-        #aebbd0
-        #f1f5f9;
+    #aebbd0
+    #f1f5f9;
 }
 
 .refollowup-table-wrapper::-webkit-scrollbar {
@@ -711,7 +821,7 @@ margin-top: 25px;
     font-weight: 700;
 
     box-shadow:
-        0 4px 10px rgba(21,85,217,.20);
+    0 4px 10px rgba(21,85,217,.20);
 }
 
 .refollowup-table td:last-child .btn-primary:hover {
@@ -732,7 +842,7 @@ margin-top: 25px;
     font-weight: 700;
 
     box-shadow:
-        0 4px 10px rgba(230,37,54,.18);
+    0 4px 10px rgba(230,37,54,.18);
 }
 
 .refollowup-table td:last-child .btn-danger:hover {
@@ -826,7 +936,7 @@ margin-top: 25px;
     overflow: hidden;
 
     box-shadow:
-        0 25px 70px rgba(0,0,0,.28);
+    0 25px 70px rgba(0,0,0,.28);
 }
 
 
@@ -912,8 +1022,8 @@ margin-top: 25px;
     cursor: pointer;
 
     transition:
-        background .2s ease,
-        transform .2s ease;
+    background .2s ease,
+    transform .2s ease;
 }
 
 #createUserModal .close:hover {
@@ -946,8 +1056,8 @@ margin-top: 25px;
     scrollbar-width: thin;
 
     scrollbar-color:
-        #aebbd0
-        #f1f5f9;
+    #aebbd0
+    #f1f5f9;
 }
 
 
@@ -1042,15 +1152,15 @@ margin-top: 25px;
     box-shadow: none;
 
     transition:
-        border-color .2s ease,
-        box-shadow .2s ease;
+    border-color .2s ease,
+    box-shadow .2s ease;
 }
 
 #createUserModal .form-control:focus {
     border-color: #4f46e5;
 
     box-shadow:
-        0 0 0 3px rgba(79,70,229,.10);
+    0 0 0 3px rgba(79,70,229,.10);
 }
 
 
@@ -1089,8 +1199,8 @@ margin-top: 25px;
     overflow: hidden;
 
     transition:
-        border-color .2s ease,
-        box-shadow .2s ease;
+    border-color .2s ease,
+    box-shadow .2s ease;
 }
 
 #createUserModal .accordion-item:hover {
@@ -1132,8 +1242,8 @@ margin-top: 25px;
     user-select: none;
 
     transition:
-        background .2s ease,
-        color .2s ease;
+    background .2s ease,
+    color .2s ease;
 }
 
 #createUserModal .accordion-item > label:hover {
@@ -1200,8 +1310,8 @@ margin-top: 25px;
     cursor: pointer;
 
     transition:
-        background .15s ease,
-        color .15s ease;
+    background .15s ease,
+    color .15s ease;
 }
 
 #createUserModal .accordion-item > div label:hover {
@@ -1278,11 +1388,11 @@ margin-top: 25px;
     cursor: pointer;
 
     box-shadow:
-        0 4px 10px rgba(34,89,217,.18);
+    0 4px 10px rgba(34,89,217,.18);
 
     transition:
-        background .2s ease,
-        transform .1s ease;
+    background .2s ease,
+    transform .1s ease;
 }
 
 #createUserModal form > .btn-primary:hover {
@@ -1422,36 +1532,36 @@ margin-top: 25px;
 
 </style>
 <script>
-function toggleModule(id, el) {
-    var box = document.getElementById(id);
+    function toggleModule(id, el) {
+        var box = document.getElementById(id);
 
-    if (box.style.display === "none") {
-        box.style.display = "block";
-        el.innerHTML = "▼ " + el.innerText.replace("▶ ", "");
-    } else {
-        box.style.display = "none";
-        el.innerHTML = "▶ " + el.innerText.replace("▼ ", "");
+        if (box.style.display === "none") {
+            box.style.display = "block";
+            el.innerHTML = "▼ " + el.innerText.replace("▶ ", "");
+        } else {
+            box.style.display = "none";
+            el.innerHTML = "▶ " + el.innerText.replace("▼ ", "");
+        }
     }
-}
 
-function openCreateUserModal() {
-    document.getElementById("createUserModal").classList.add("show");
-}
-
-function closeCreateUserModal() {
-    document.getElementById("createUserModal").classList.remove("show");
-}
-
-window.onclick = function(event) {
-    var modal = document.getElementById("createUserModal");
-
-    if (event.target === modal) {
-        closeCreateUserModal();
+    function openCreateUserModal() {
+        document.getElementById("createUserModal").classList.add("show");
     }
-};
+
+    function closeCreateUserModal() {
+        document.getElementById("createUserModal").classList.remove("show");
+    }
+
+    window.onclick = function(event) {
+        var modal = document.getElementById("createUserModal");
+
+        if (event.target === modal) {
+            closeCreateUserModal();
+        }
+    };
 </script>
 
-   <script src="js/jquery.min.js"></script>
+<script src="js/jquery.min.js"></script>
 <script src="js/bootstrap.js"></script>
 <script src="js/jquery.dcjqaccordion.2.7.js"></script>
 <script src="js/scripts.js"></script>

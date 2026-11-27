@@ -1,4 +1,3 @@
-
 <?php
 session_start();
 
@@ -455,7 +454,7 @@ include('header.php');
                                     <button
                                         type="button"
                                         class="primary1"
-                                        onclick="window.location.href='update-payment.php?id=<?= $client_id; ?>'"
+                                        onclick="window.location.href='solar-update-payment.php?id=<?= $client_id; ?>'"
                                     >
                                         Update Payment
                                     </button>

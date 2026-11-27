@@ -2,7 +2,6 @@
 
 session_start();
 
-
 // =========================================================
 // LOGIN CHECK
 // =========================================================
@@ -11,10 +10,9 @@ if (!isset($_SESSION['email']) || !isset($_SESSION['role'])) {
 
     $_SESSION['msg'] = "You must log in first";
 
-    header('location:login.php');
+    header('Location: login.php');
     exit();
 }
-
 
 // =========================================================
 // LOGOUT
@@ -24,10 +22,9 @@ if (isset($_GET['logout'])) {
 
     session_destroy();
 
-    header('location:login.php');
+    header('Location: login.php');
     exit();
 }
-
 
 // =========================================================
 // DATABASE & HEADER
@@ -35,11 +32,13 @@ if (isset($_GET['logout'])) {
 
 require_once 'db_connect.php';
 
+mysqli_set_charset($conn, "utf8mb4");
+
 include 'header.php';
 
 
 // =========================================================
-// SEARCH LOGIC
+// SEARCH LOGIC - DATABASE SEARCH
 // =========================================================
 
 $search = trim($_GET['search'] ?? '');
@@ -86,6 +85,10 @@ $count_sql = "
 
 $count_stmt = mysqli_prepare($conn, $count_sql);
 
+if (!$count_stmt) {
+    die("Count Query Failed: " . mysqli_error($conn));
+}
+
 if ($types !== '') {
     mysqli_stmt_bind_param($count_stmt, $types, ...$params);
 }
@@ -119,6 +122,10 @@ $sql = "
 
 $stmt = mysqli_prepare($conn, $sql);
 
+if (!$stmt) {
+    die("Inquiry Query Failed: " . mysqli_error($conn));
+}
+
 if ($types !== '') {
     mysqli_stmt_bind_param($stmt, $types, ...$params);
 }
@@ -133,11 +140,13 @@ $result = mysqli_stmt_get_result($stmt);
 // =========================================================
 
 function e($value) {
+
     return htmlspecialchars(
         (string)($value ?? ''),
         ENT_QUOTES,
         'UTF-8'
     );
+
 }
 
 ?>
@@ -156,30 +165,37 @@ function e($value) {
 
             <div class="solar-table-header">
 
-                <h1>📋 View Inquiries</h1>
+                <h1>
+                    📋 View Inquiries
+                </h1>
 
                 <p>
+
                     Showing all new inquiry records
 
                     <span class="record-count">
                         <?= $total_records; ?> Records
                     </span>
+
                 </p>
 
             </div>
 
 
-            <!-- MAIN CARD -->
+            <!-- =================================================
+                 MAIN CARD
+            ================================================== -->
 
             <div class="solar-table-card">
 
-                <!-- TOP AREA -->
 
-                <div class="solar-table-top-section">
+                <!-- =================================================
+                     SEARCH - SAME AS REFERENCE
+                ================================================== -->
 
-                    <!-- SEARCH -->
+                <div class="followup-top-area">
 
-                   <div class="table-search-wrapper">
+                    <div class="inquiry-search-wrapper">
 
                         <span class="table-search-icon">
                             🔍
@@ -188,22 +204,22 @@ function e($value) {
                         <input
                             type="text"
                             id="txt_searchall"
-                            class="table-record-search"
-                            placeholder="Search by name, phone or email..."
-                            value="<?= htmlspecialchars($search, ENT_QUOTES, 'UTF-8'); ?>"
+                            class="inquiry-search"
+                            placeholder="Search by name, phone or message..."
                             autocomplete="off"
                         >
 
                     </div>
 
-                  
                 </div>
 
 
-                <!-- TABLE -->
+                <!-- =================================================
+                     TABLE
+                ================================================== -->
 
                 <div
-                    class="actual-table-wrapper"
+                    class="inquiry-table-wrapper refollowup-table-wrapper"
                     id="scrollable-content"
                 >
 
@@ -211,6 +227,8 @@ function e($value) {
                         class="solar-actual-table"
                         id="payments-table"
                     >
+
+                        <!-- TABLE HEADER -->
 
                         <thead>
 
@@ -237,6 +255,8 @@ function e($value) {
                         </thead>
 
 
+                        <!-- TABLE BODY -->
+
                         <tbody>
 
                         <?php
@@ -249,11 +269,15 @@ function e($value) {
 
                                 $id = (int)$row['id'];
 
-                                // Check quotation
+
+                                // =================================
+                                // CHECK SOLAR QUOTATION
+                                // =================================
 
                                 $qStmt = mysqli_prepare(
                                     $conn,
-                                    "SELECT id FROM tbl_solar_quotations
+                                    "SELECT id
+                                     FROM tbl_solar_quotation
                                      WHERE inquiry_id = ?
                                      LIMIT 1"
                                 );
@@ -274,38 +298,74 @@ function e($value) {
 
                             <tr class="data-row">
 
-                                <td class="table-sr-column">
+
+                                <!-- SERIAL NUMBER -->
+
+                                <td class="inquiry-sr">
+
                                     <?= $sr_no++; ?>
+
                                 </td>
 
-                                <td class="table-name-column">
+
+                                <!-- NAME -->
+
+                                <td class="inquiry-name">
+
                                     <?= e($row['name']); ?>
+
                                 </td>
 
-                                <td class="table-phone-column">
+
+                                <!-- PHONE -->
+
+                                <td class="inquiry-phone">
+
                                     <?= e($row['phone']); ?>
+
                                 </td>
 
+
+                                <!-- EMAIL -->
+
                                 <td>
+
                                     <?= e($row['email']); ?>
+
                                 </td>
+
+
+                                <!-- ADDRESS -->
 
                                 <td>
+
                                     <?= e($row['address']); ?>
+
                                 </td>
 
-                                <td class="table-message-column">
+
+                                <!-- MESSAGE -->
+
+                                <td class="inquiry-message">
+
                                     <?= e($row['message']); ?>
+
                                 </td>
 
-                                <td class="table-date-column">
+
+                                <!-- INQUIRY DATE -->
+
+                                <td class="inquiry-date">
+
                                     <?= e($row['inq_date']); ?>
+
                                 </td>
 
 
                                 <!-- ACTION -->
 
                                 <td class="table-action-cell">
+
 
                                     <button
                                         type="button"
@@ -371,36 +431,44 @@ function e($value) {
 
 
                                         <!-- SEND QUOTATION -->
+                                        <button
+                                            type="button"
+                                            class="primary1"
+                                        >
 
                                         <a
-                                            href="add_quotation.php?inquiry_id=<?= $id; ?>"
-                                            class="primary6"
+                                            href="solar-add-quotation.php?inquiry_id=<?= $id; ?>"
                                         >
                                             Add Quotation
-                                        </a>
+                                        </a></button>
 
 
                                         <!-- FABRICATION -->
+                                        <button
+                                            type="button"
+                                            class="primary2"
+                                        >
 
                                         <a
-                                            href="fabrication_quotation.php?inquiry_id=<?= $id; ?>"
-                                            class="primary6"
+                                            href="solar-fabrication_quotation.php?inquiry_id=<?= $id; ?>"
                                         >
                                             Fabrication
-                                        </a>
+                                        </a></button>
 
 
                                         <!-- VIEW QUOTATION -->
 
                                         <?php if ($quotation) { ?>
+                                            <button
+                                            type="button"
+                                            class="primary1"
+                                        >
 
                                             <a
-                                                href="generate_quotation.php?id=<?= (int)$quotation['id']; ?>"
-                                                target="_blank"
-                                                class="primary2"
-                                            >
-                                                View Quotation
-                                            </a>
+                                                href="solar-view-quotations.php">
+                                        
+                                              View Quotation
+                                            </a></button>
 
                                         <?php } else { ?>
 
@@ -412,20 +480,24 @@ function e($value) {
 
 
                                         <!-- DELETE -->
+                                        <button
+                                            type="button"
+                                            class="primary3"
+                                        >
 
                                         <a
-                                            href="delete-inquiry.php?id=<?= $id; ?>"
-                                            class="primary3"
+                                            href="solar-delete-inquiry.php?id=<?= $id; ?>"
                                             onclick="return confirm('Are you sure you want to delete this inquiry?');"
                                         >
                                             Delete
-                                        </a>
+                                        </a></button>
 
                                     </div>
 
                                 </td>
 
                             </tr>
+
 
                         <?php
 
@@ -438,7 +510,9 @@ function e($value) {
                             <tr class="no-data-row">
 
                                 <td colspan="8" class="no-inquiry">
+
                                     No Inquiry Found.
+
                                 </td>
 
                             </tr>
@@ -462,30 +536,57 @@ function e($value) {
 
 
 <!-- =====================================================
-     ACTION MENU JAVASCRIPT
+     BOTTOM HORIZONTAL SCROLL
+===================================================== -->
+
+<div class="scroll-sync-wrapper">
+
+    <div class="dummy-scrollbar"></div>
+
+</div>
+
+
+<!-- =====================================================
+     JAVASCRIPT
 ===================================================== -->
 
 <script>
+
+
+/* =========================================================
+   ACTION MENU
+========================================================= */
 
 function toggleActions(button) {
 
     const container = button.nextElementSibling;
 
+
+    // CLOSE OTHER MENUS
+
     document.querySelectorAll('.action-buttons').forEach(function(menu) {
 
         if (menu !== container) {
+
             menu.style.display = 'none';
+
         }
 
     });
+
 
     document.querySelectorAll('.action-btn').forEach(function(btn) {
 
         if (btn !== button) {
+
             btn.textContent = 'Action';
+
         }
 
     });
+
+
+    // TOGGLE CURRENT MENU
 
     if (
         container.style.display === 'none' ||
@@ -493,11 +594,13 @@ function toggleActions(button) {
     ) {
 
         container.style.display = 'flex';
+
         button.textContent = 'Actions';
 
     } else {
 
         container.style.display = 'none';
+
         button.textContent = 'Action';
 
     }
@@ -505,18 +608,25 @@ function toggleActions(button) {
 }
 
 
-// CLOSE MENU ON OUTSIDE CLICK
+/* =========================================================
+   CLOSE ACTION MENU ON OUTSIDE CLICK
+========================================================= */
 
 document.addEventListener('click', function(event) {
 
     if (!event.target.closest('.inquiry-action-cell')) {
 
         document.querySelectorAll('.action-buttons').forEach(function(menu) {
+
             menu.style.display = 'none';
+
         });
 
+
         document.querySelectorAll('.action-btn').forEach(function(button) {
+
             button.textContent = 'Action';
+
         });
 
     }
@@ -524,18 +634,123 @@ document.addEventListener('click', function(event) {
 });
 
 
-// ESC KEY
+/* =========================================================
+   SEARCH - EXACT REFERENCE LOGIC
+========================================================= */
+
+const searchInput =
+    document.getElementById('txt_searchall');
+
+if (searchInput) {
+
+    searchInput.addEventListener(
+        'keyup',
+        function() {
+
+            const searchValue =
+                this.value
+                    .toLowerCase()
+                    .trim();
+
+
+            const rows =
+                document.querySelectorAll(
+                    '#payments-table tbody tr.data-row'
+                );
+
+
+            rows.forEach(function(row) {
+
+                const rowText =
+                    row.textContent
+                        .toLowerCase();
+
+
+                if (
+                    rowText.includes(searchValue)
+                ) {
+
+                    row.style.display = '';
+
+                } else {
+
+                    row.style.display = 'none';
+
+                }
+
+            });
+
+        }
+    );
+
+}
+
+
+/* =========================================================
+   SYNCHRONIZED BOTTOM SCROLLBAR
+========================================================= */
+
+const dummyScroll =
+    document.querySelector(
+        '.scroll-sync-wrapper'
+    );
+
+const realScroll =
+    document.querySelector(
+        '#scrollable-content'
+    );
+
+
+if (dummyScroll && realScroll) {
+
+
+    // DUMMY SCROLLBAR TO TABLE
+
+    dummyScroll.addEventListener(
+        'scroll',
+        function() {
+
+            realScroll.scrollLeft =
+                dummyScroll.scrollLeft;
+
+        }
+    );
+
+
+    // TABLE TO DUMMY SCROLLBAR
+
+    realScroll.addEventListener(
+        'scroll',
+        function() {
+
+            dummyScroll.scrollLeft =
+                realScroll.scrollLeft;
+
+        }
+    );
+
+}
+
+
+/* =========================================================
+   CLOSE MENU ON ESC
+========================================================= */
 
 document.addEventListener('keydown', function(event) {
 
     if (event.key === 'Escape') {
 
         document.querySelectorAll('.action-buttons').forEach(function(menu) {
+
             menu.style.display = 'none';
+
         });
 
+
         document.querySelectorAll('.action-btn').forEach(function(button) {
+
             button.textContent = 'Action';
+
         });
 
     }
@@ -545,7 +760,9 @@ document.addEventListener('keydown', function(event) {
 </script>
 
 
-<!-- EXISTING JAVASCRIPT FILES -->
+<!-- =====================================================
+     EXISTING JAVASCRIPT FILES
+===================================================== -->
 
 <script src="js/bootstrap.js"></script>
 
@@ -560,6 +777,7 @@ document.addEventListener('keydown', function(event) {
 <script src="js/jquery.scrollTo.js"></script>
 
 <script src="js/search.js"></script>
+
 
 </body>
 </html>
