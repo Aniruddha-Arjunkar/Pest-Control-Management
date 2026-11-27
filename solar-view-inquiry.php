@@ -155,15 +155,15 @@ function e($value) {
      MAIN CONTENT
 ===================================================== -->
 
-<section id="solar-main-content">
+<section id="main-content">
 
-    <section class="outer-wrapper">
+    <section class="wrapper">
 
-        <div class="solar-view-table-page">
+        <div class="inquiry-page">
 
             <!-- PAGE HEADER -->
 
-            <div class="solar-table-header">
+            <div class="inquiry-page-header">
 
                 <h1>
                     📋 View Inquiries
@@ -173,7 +173,7 @@ function e($value) {
 
                     Showing all new inquiry records
 
-                    <span class="record-count">
+                    <span class="inquiry-count">
                         <?= $total_records; ?> Records
                     </span>
 
@@ -186,7 +186,7 @@ function e($value) {
                  MAIN CARD
             ================================================== -->
 
-            <div class="solar-table-card">
+            <div class="inquiry-card">
 
 
                 <!-- =================================================
@@ -197,7 +197,7 @@ function e($value) {
 
                     <div class="inquiry-search-wrapper">
 
-                        <span class="table-search-icon">
+                        <span class="inquiry-search-icon">
                             🔍
                         </span>
 
@@ -224,7 +224,7 @@ function e($value) {
                 >
 
                     <table
-                        class="solar-actual-table"
+                        class="inquiry-table"
                         id="payments-table"
                     >
 
@@ -364,21 +364,23 @@ function e($value) {
 
                                 <!-- ACTION -->
 
-                                <td class="table-action-cell">
+                                <td class="inquiry-action-cell">
 
 
                                     <button
                                         type="button"
-                                        class="record-action-btn"
+                                        class="action-btn"
                                         onclick="toggleActions(this)"
                                     >
                                         Action
                                     </button>
 
+
                                     <div
-                                        class="action-sub-buttons"
+                                        class="action-buttons"
                                         style="display:none;"
                                     >
+
 
                                          <button
                                             type="button"
@@ -467,7 +469,7 @@ function e($value) {
                                             <a
                                                 href="solar-view-quotations.php">
                                         
-                                              View Quotation
+                                         View Quotation
                                             </a></button>
 
                                         <?php } else { ?>
