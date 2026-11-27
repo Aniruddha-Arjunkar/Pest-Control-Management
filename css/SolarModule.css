@@ -1,6 +1,71 @@
 #solar-main-content {
     padding: 40px;
 }
+
+/* ============================================================================================== */
+/* =================================== SIDEBAR CSS ============================================== */
+/* ============================================================================================== */
+
+/* .sidebar-menu ul.solar-sub {
+    background:#1b4332 !important;
+    
+}
+
+.solar-subs-sub{
+    background:#48b332 !important;
+} */
+
+/* Main Solar Submenu */
+.sidebar-menu ul.solar-sub {
+    background: #164B3C !important;
+    /* background: #064E3B !important; */
+    border-radius: 9px;
+    padding: 5px;
+    margin-top: 5px;
+}
+
+
+/* Nested Solar Submenus */
+.sidebar-menu ul.solar-subs-sub {
+    background: #1E5B49 !important;
+    /* background: #047857 !important; */
+    border-radius: 8px;
+    padding: 5px;
+    margin: 4px 0 6px 8px;
+}
+
+
+/* Solar Menu Links */
+.sidebar-menu ul.solar-sub li a,
+.sidebar-menu ul.solar-subs-sub li a {
+    color: #EAF5EF !important;
+    /* color: #EAF5EF !important; */
+    transition: all 0.25s ease;
+    border-radius: 6px;
+}
+
+
+/* Hover Effect */
+.sidebar-menu ul.solar-sub li a:hover,
+.sidebar-menu ul.solar-subs-sub li a:hover {
+    background: #287A5B !important;
+    /* background: #059669 !important; */
+    color: #FFFFFF !important;
+    padding-left: 18px;
+
+}
+
+
+/* Active Menu Item */
+.sidebar-menu ul.solar-sub li.active > a,
+.sidebar-menu ul.solar-subs-sub li.active > a {
+    background: #2E9B68 !important;
+    /* background: #10B981 !important; */
+    color: #FFFFFF !important;
+    font-weight: 600;
+
+}
+
 /* ============================================================================================== */
 /* ====================================== FORM PAGE CSS ========================================= */
 /* ============================================================================================== */
@@ -555,3 +620,4 @@ button.primary6 {
     background: #dbeafe;
     color: #1d4ed8;
 }
+
