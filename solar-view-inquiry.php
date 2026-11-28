@@ -155,15 +155,15 @@ function e($value) {
      MAIN CONTENT
 ===================================================== -->
 
-<section id="main-content">
+<section id="solar-main-content">
 
-    <section class="wrapper">
+    <section class="outer-wrapper">
 
-        <div class="inquiry-page">
+        <div class="solar-view-table-page">
 
             <!-- PAGE HEADER -->
 
-            <div class="inquiry-page-header">
+            <div class="solar-table-header">
 
                 <h1>
                     📋 View Inquiries
@@ -173,7 +173,7 @@ function e($value) {
 
                     Showing all new inquiry records
 
-                    <span class="inquiry-count">
+                    <span class="record-count">
                         <?= $total_records; ?> Records
                     </span>
 
@@ -186,25 +186,25 @@ function e($value) {
                  MAIN CARD
             ================================================== -->
 
-            <div class="inquiry-card">
+            <div class="solar-table-card">
 
 
                 <!-- =================================================
                      SEARCH - SAME AS REFERENCE
                 ================================================== -->
 
-                <div class="followup-top-area">
+                <div class="solar-table-top-section">
 
-                    <div class="inquiry-search-wrapper">
+                    <div class="table-search-wrapper">
 
-                        <span class="inquiry-search-icon">
+                        <span class="table-search-icon">
                             🔍
                         </span>
 
                         <input
                             type="text"
                             id="txt_searchall"
-                            class="inquiry-search"
+                            class="table-record-search"
                             placeholder="Search by name, phone or message..."
                             autocomplete="off"
                         >
@@ -219,12 +219,12 @@ function e($value) {
                 ================================================== -->
 
                 <div
-                    class="inquiry-table-wrapper refollowup-table-wrapper"
+                    class="actual-table-wrapper refollowup-table-wrapper"
                     id="scrollable-content"
                 >
 
                     <table
-                        class="inquiry-table"
+                        class="solar-actual-table"
                         id="payments-table"
                     >
 
@@ -277,7 +277,7 @@ function e($value) {
                                 $qStmt = mysqli_prepare(
                                     $conn,
                                     "SELECT id
-                                     FROM tbl_solar_quotation
+                                     FROM tbl_solar_quotations
                                      WHERE inquiry_id = ?
                                      LIMIT 1"
                                 );
@@ -310,7 +310,7 @@ function e($value) {
 
                                 <!-- NAME -->
 
-                                <td class="inquiry-name">
+                                <td class="table-name-column">
 
                                     <?= e($row['name']); ?>
 
@@ -346,7 +346,7 @@ function e($value) {
 
                                 <!-- MESSAGE -->
 
-                                <td class="inquiry-message">
+                                <td class="table-message-column">
 
                                     <?= e($row['message']); ?>
 
@@ -355,7 +355,7 @@ function e($value) {
 
                                 <!-- INQUIRY DATE -->
 
-                                <td class="inquiry-date">
+                                <td class="table-date-column">
 
                                     <?= e($row['inq_date']); ?>
 
@@ -364,12 +364,12 @@ function e($value) {
 
                                 <!-- ACTION -->
 
-                                <td class="inquiry-action-cell">
+                                <td class="table-action-cell">
 
 
                                     <button
                                         type="button"
-                                        class="action-btn"
+                                        class="record-action-btn"
                                         onclick="toggleActions(this)"
                                     >
                                         Action
@@ -377,7 +377,7 @@ function e($value) {
 
 
                                     <div
-                                        class="action-buttons"
+                                        class="action-sub-buttons"
                                         style="display:none;"
                                     >
 
