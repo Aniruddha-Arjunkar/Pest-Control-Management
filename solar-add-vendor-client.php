@@ -131,7 +131,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_client'])) {
             ");
 
             $insertClient->bind_param(
-                "sssss dssi",
+                "sssssdssi",
                 $name,
                 $mobile,
                 $email,
@@ -195,7 +195,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_client'])) {
             $_SESSION['status'] = "Vendor Client Added Successfully!";
             $_SESSION['status_code'] = "success";
 
-            header("Location: view-vendor-client.php?id=" . $vendor_id);
+            header("Location: solar-view-vendor-client.php?id=" . $vendor_id);
             exit();
 
         } catch (Exception $e) {
@@ -241,7 +241,7 @@ include('header.php');
 
         <form
             method="POST"
-            action="add-vendor-client.php?vendor_id=<?= $vendor_id; ?>"
+            action="solar-add-vendor-client.php?vendor_id=<?= $vendor_id; ?>"
             class="refollowup-form"
         >
 

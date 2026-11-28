@@ -288,7 +288,7 @@ include('header.php');
                                 </button>
 
                                 <button type="button" class="primary1">
-                                    <a href="add-invoice.php?client_id=<?= (int)$row['id']; ?>">
+                                    <a href="solar-add-invoice.php?client_id=<?= (int)$row['id']; ?>">
                                         <i class="bi bi-printer"></i>
                                         Generate Invoice
                                     </a>

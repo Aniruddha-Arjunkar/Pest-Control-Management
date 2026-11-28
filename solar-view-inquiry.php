@@ -277,7 +277,7 @@ function e($value) {
                                 $qStmt = mysqli_prepare(
                                     $conn,
                                     "SELECT id
-                                     FROM tbl_solar_quotations
+                                     FROM tbl_solar_quotation
                                      WHERE inquiry_id = ?
                                      LIMIT 1"
                                 );

@@ -188,16 +188,18 @@ $total_records = 0;
 
 $sql = "
 
+
 SELECT
     MAX(p.Id) AS payment_id,
     c.Id AS client_Id,
+    NULL AS associate_id,
+    NULL AS agreement_id,
+    NULL AS payment_type,
     c.branch,
     c.services,
     c.cust_name,
     c.cust_phone,
-
     p.total_amount,
-
     SUM(p.paid_amount) AS total_paid,
 
     (
@@ -212,7 +214,9 @@ SELECT
         )
     ) AS due_amount,
 
-    MAX(p.due_date) AS due_date
+    MAX(p.due_date) AS due_date,
+    'regular' AS record_type,
+    NULL AS group_id
 
 FROM tbl_client c
 
@@ -228,57 +232,44 @@ GROUP BY c.Id
 HAVING due_amount > 0
 
 
-UNION
+UNION ALL
 
+
+/* =========================================================
+   2. CONSULTANCY PAYMENT
+========================================================= */
 
 SELECT
-
     MAX(p.Id) AS payment_id,
-
     p.client_Id,
 
-    'Nagpur' AS branch,
+    (
+        SELECT a2.Id
+        FROM tbl_associate a2
+        WHERE LOWER(TRIM(a2.company_name)) =
+              LOWER(TRIM(pl.company_name))
+        LIMIT 1
+    ) AS associate_id,
 
+    MAX(ag.id) AS agreement_id,
+    p.payment_type AS payment_type,
+    'Nagpur' AS branch,
     'Consultancy' AS services,
 
     IF(
         p.payment_type = 'Company Pay',
-
-        CONCAT(
-            pl.company_name,
-            ' (',
-            pl.candidate_name,
-            ')'
-        ),
-
-        CONCAT(
-            pl.candidate_name,
-            ' (',
-            pl.company_name,
-            ')'
-        )
+        CONCAT(pl.company_name, ' (', pl.candidate_name, ')'),
+        CONCAT(pl.candidate_name, ' (', pl.company_name, ')')
     ) AS cust_name,
-
 
     IF(
         p.payment_type = 'Company Pay',
-
-        COALESCE(
-            ag.phone,
-            a.phone
-        ),
-
-        COALESCE(
-            a.phone,
-            ag.phone
-        )
+        COALESCE(ag.phone, a.phone),
+        COALESCE(a.phone, ag.phone)
     ) AS cust_phone,
 
-
     p.total_amount,
-
     SUM(p.paid_amount) AS total_paid,
-
 
     (
         p.total_amount
@@ -292,77 +283,120 @@ SELECT
         )
     ) AS due_amount,
 
-
-    MAX(p.due_date) AS due_date
-
+    MAX(p.due_date) AS due_date,
+    'consultancy' AS record_type,
+    NULL AS group_id
 
 FROM tbl_payment p
-
 
 LEFT JOIN tbl_placement pl
     ON p.interview_id = pl.interview_id
 
-
 LEFT JOIN tbl_agreement ag
     ON pl.candidate_id = ag.id
-
 
 LEFT JOIN tbl_associate a
     ON pl.candidate_id = a.Id
 
-
 WHERE p.status != 'defaulted'
-
 
 GROUP BY
     p.client_Id,
     p.total_amount
 
-
 HAVING due_amount > 0
 
 
-UNION
+UNION ALL
 
+
+/* =========================================================
+   3. INTERNSHIP PAYMENT
+========================================================= */
 
 SELECT
-
     MAX(p.Id) AS payment_id,
-
     p.client_Id,
-
+    NULL AS associate_id,
+    NULL AS agreement_id,
+    NULL AS payment_type,
     'Nagpur' AS branch,
-
     'Internship' AS services,
-
     sa.name AS cust_name,
-
     sa.phone AS cust_phone,
-
     p.total_amount,
-
     SUM(p.paid_amount) AS total_paid,
 
     (
-        p.total_amount
-        - SUM(p.paid_amount)
+        p.total_amount - SUM(p.paid_amount)
     ) AS due_amount,
 
-    MAX(p.due_date) AS due_date
-
+    MAX(p.due_date) AS due_date,
+    'internship' AS record_type,
+    NULL AS group_id
 
 FROM tbl_student_admissions sa
-
 
 LEFT JOIN tbl_payment p
     ON sa.student_id = p.client_Id
 
-
 WHERE p.status != 'defaulted'
-
 
 GROUP BY sa.student_id
 
+HAVING due_amount > 0
+
+
+UNION ALL
+
+
+/* =========================================================
+   4. SOLAR PAYMENT
+========================================================= */
+
+SELECT
+
+    MAX(sp.id) AS payment_id,
+
+    sc.id AS client_Id,
+
+    NULL AS associate_id,
+
+    NULL AS agreement_id,
+
+    NULL AS payment_type,
+
+    'Solar' AS branch,
+
+    'Solar Management' AS services,
+
+    sc.cust_name,
+
+    sc.cust_phone,
+
+    MAX(sp.total_amount) AS total_amount,
+
+    SUM(COALESCE(sp.paid_amount, 0)) AS total_paid,
+
+    GREATEST(
+        MAX(sp.total_amount) - SUM(COALESCE(sp.paid_amount, 0)),
+        0
+    ) AS due_amount,
+
+    MAX(sp.due_date) AS due_date,
+
+    'solar' AS record_type,
+
+    sp.group_id
+
+FROM tbl_solar_client sc
+
+INNER JOIN tbl_solar_payment sp
+    ON sc.id = sp.client_id
+
+GROUP BY
+    sc.id,
+    sp.group_id
 
 HAVING due_amount > 0
 
